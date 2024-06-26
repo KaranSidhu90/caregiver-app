@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "caregiver",
+    "slug": "caregiver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-container.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#295259"  
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "fonts": [
+      "./assets/fonts/Poppins/Poppins-Regular.ttf",
+      "./assets/fonts/Poppins/Poppins-Bold.ttf",
+      "./assets/fonts/Poppins/Poppins-Medium.ttf",
+      "./assets/fonts/Poppins/Poppins-SemiBold.ttf",
+      "./assets/fonts/Poppins/Poppins-Light.ttf"
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
