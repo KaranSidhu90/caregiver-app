@@ -34,7 +34,7 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     const phoneNumber = phoneInputRef.current?.getValue() || '';
     const passcodeString = passcode.join('');
 
-    if (phoneNumber === '+13065816969' && passcodeString === '1234') {
+    if (phoneNumber === '+11231231234' && passcodeString === '1234') {
       navigation.navigate('HomeInternal');
     } else {
       Alert.alert('Error', 'Invalid phone number or passcode.');
