@@ -16,13 +16,14 @@ To install React Native CLI, run:
 npm install -g react-native-cli
 ```
 
-## Setup Instructions
+## Setup Instructions 
 
 1. Clone the repository to your local machine:
 
 ```bash
 git clone https://github.com/your-username/caregiver-app.git
 cd caregiver-app
+cd caregiver
 ```
 
 2. Install the dependencies:
@@ -38,6 +39,28 @@ npm install
 npm start -- --reset-cache
 ```
 
+
+## Backend Setup
+
+1. Open a new terminal window and navigate to the `server` directory.
+
+```bash
+cd server
+```
+
+2. Install the dependencies:
+
+```bash
+npm install
+```
+
+3. Start the server:
+
+```bash
+npm start
+```
+
+The server will start running on `http://localhost:5000`.
 ## Mocking the Backend
 
 Currently, the backend for this app is not functional. Instead, we are using an API Mocking tool to mock data for the app.
