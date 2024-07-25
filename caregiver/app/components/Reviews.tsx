@@ -13,14 +13,18 @@ type Props = {
 const Reviews: React.FC<Props> = ({ reviews }) => {
   return (
     <View style={styles.container}>
-      {reviews.map((review, index) => (
-        <View key={index} style={styles.reviewItem}>
-          <Text style={styles.reviewerName}>{review.name}</Text>
-          <Text style={styles.reviewDate}>{new Date(review.date).toLocaleDateString()}</Text>
-          <Text style={styles.reviewRating}>★ {review.rating}</Text>
-          <Text style={styles.reviewText}>{review.review}</Text>
-        </View>
-      ))}
+      {reviews.length > 0 ? (
+        reviews.map((review, index) => (
+          <View key={index} style={styles.reviewItem}>
+            <Text style={styles.reviewerName}>{review.name}</Text>
+            <Text style={styles.reviewDate}>{new Date(review.date).toLocaleDateString()}</Text>
+            <Text style={styles.reviewRating}>★ {review.rating}</Text>
+            <Text style={styles.reviewText}>{review.review}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.noReviewsText}>No Reviews</Text>
+      )}
     </View>
   );
 };
@@ -56,6 +60,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#4A4A4A',
+  },
+  noReviewsText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    color: '#4A4A4A',
+    textAlign: 'center',
   },
 });
 

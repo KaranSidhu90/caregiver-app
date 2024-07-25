@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import DashboardHeader from '../components/DashboardHeader';
 import CaregiverCard from '../components/CaregiverCard';
+import { initializeAuthToken } from '../../utils/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_ENDPOINTS from '../../config/apiEndpoints';
 
 type Props = {
   navigation: any;
@@ -11,7 +14,9 @@ type Props = {
 const Dashboard: React.FC<Props> = ({ navigation }) => {
   const [caregivers, setCaregivers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userName = 'Robert';
+  const [userName, setUserName] = useState('User'); // Default user name
+  const [userId, setUserId] = useState(''); // User ID
+  const [trialVisitsRemaining, setTrialVisitsRemaining] = useState<number | null>(null);
 
   const getTimeOfDayGreeting = () => {
     const currentHour = new Date().getHours();
@@ -27,16 +32,67 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
   const timeOfDayGreeting = getTimeOfDayGreeting();
 
   useEffect(() => {
-    axios.get('https://api.mockaron.com/mock/m0cbafdz7b/all-caregivers')
-      .then(response => {
-        setCaregivers(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching caregivers:', error);
-        setLoading(false);
-      });
+    const fetchData = async () => {
+      await initializeAuthToken(); // Initialize the token before making requests
+      await fetchUserDetails();
+      await fetchTrialVisits();
+      await fetchCaregivers();
+      setLoading(false);
+    };
+
+    fetchData();
   }, []);
+
+  const fetchUserDetails = async () => {
+    try {
+      // Retrieve user details from AsyncStorage
+      const fullName = await AsyncStorage.getItem('userName');
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (fullName) {
+        const firstName = fullName.split(' ')[0]; // Use only the first part of the name
+        setUserName(firstName);
+      }
+      if (storedUserId) {
+        setUserId(storedUserId);
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    }
+  };
+
+  const fetchTrialVisits = async () => {
+    try {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        // Fetch trial visits data
+        const trialVisitsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(storedUserId));
+        const bookingsCount = trialVisitsResponse.data.length;
+        const remaining = 7 - bookingsCount;
+        if (remaining > 0) {
+          setTrialVisitsRemaining(remaining);
+        } else {
+          setTrialVisitsRemaining(null); // Hide if no trial visits left
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching trial visits:', error);
+    }
+  };
+
+  const fetchCaregivers = async () => {
+    try {
+      // Fetch caregivers data
+      const caregiversResponse = await axios.get(API_ENDPOINTS.USERS.GET_ALL_CAREGIVERS);
+      setCaregivers(caregiversResponse.data);
+    } catch (error) {
+      console.error('Error fetching caregivers:', error);
+    }
+  };
+
+  const handleCaregiverPress = (caregiver: any) => {
+    console.log('Caregiver pressed:', caregiver); // Log the caregiver object
+    navigation.navigate('CaregiverProfile', { caregiver });
+  };
 
   if (loading) {
     return (
@@ -48,25 +104,25 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <DashboardHeader name={userName} timeOfDay={timeOfDayGreeting} />
+      <DashboardHeader name={userName} timeOfDay={timeOfDayGreeting} navigation={navigation} /> {/* Pass navigation prop */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.dataContainer}>
-          <Text style={styles.trialText}>As a new user we provide free of cost trial visits</Text>
-          <View style={styles.trialVisitsContainer}>
-            <Text style={styles.trialVisitsLabel}>Trial Visits Remaining</Text>
-            <View style={styles.trialVisitsCountContainer}>
-              <Text style={styles.trialVisitsCount}>7</Text>
+          {trialVisitsRemaining !== null && (
+            <View style={styles.trialVisitsContainer}>
+              <Text style={styles.trialVisitsLabel}>Trial Visits Remaining:</Text>
+              <Text style={styles.trialVisitsCount}>{trialVisitsRemaining}</Text>
             </View>
-          </View>
-          
+          )}
           <Text style={styles.sectionTitle}>Recommended Caregivers</Text>
           <ScrollView style={styles.recommendedCaregiversContainer}>
             {caregivers.slice(0, 5).map((caregiver, index) => (
-              <CaregiverCard
-                key={index}
-                caregiver={caregiver}
-                navigation={navigation}
-              />
+              <TouchableOpacity key={index} onPress={() => handleCaregiverPress(caregiver)}>
+                <CaregiverCard
+                  key={index}
+                  caregiver={caregiver}
+                  navigation={navigation}
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
           <TouchableOpacity 
@@ -100,32 +156,20 @@ const styles = StyleSheet.create({
     height: '120%',
     width: '100%',
   },
-  trialText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-    color: '#4A4A4A',
-    marginBottom: 20,
-    textAlign: 'left',
-    zIndex: 999,
-  },
   trialVisitsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    backgroundColor: '#E0F7FA',
     padding: 10,
     borderRadius: 10,
-    zIndex: 999,
+    marginVertical: 10,
   },
   trialVisitsLabel: {
     fontSize: 16,
     fontFamily: 'Poppins-Medium',
     color: '#4A4A4A',
-  },
-  trialVisitsCountContainer: {
-    backgroundColor: '#E0F7FA',
-    padding: 10,
-    borderRadius: 10,
+    marginRight: 10,
   },
   trialVisitsCount: {
     fontSize: 16,

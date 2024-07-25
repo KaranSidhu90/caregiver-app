@@ -13,6 +13,12 @@ exports.register = async (req, res, next) => {
       careNeeds, experience, activeClients, totalClients, skills
     } = req.body;
 
+    // Check if a user with the provided phone number already exists
+    const existingUser = await User.findOne({ phoneNumber });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Phone number already in use' });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -30,27 +36,33 @@ exports.register = async (req, res, next) => {
   }
 };
 
+
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    console.log('Login request:', email, password);
-    const user = await User.findOne({ email });
+    const { phoneNumber, passcode } = req.body;
+    console.log('Login request:', phoneNumber, passcode);
+
+    const user = await User.findOne({ phoneNumber });
     if (!user) {
       console.error('User not found');
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid phone number or passcode' });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+
+    const isMatch = await bcrypt.compare(passcode, user.password); // Assuming passcode is stored as a hashed password
     if (!isMatch) {
-      console.error('Password does not match');
-      return res.status(400).json({ message: 'Invalid email or password' });
+      console.error('Passcode does not match');
+      return res.status(400).json({ message: 'Invalid phone number or passcode' });
     }
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
     console.log('Generated token:', token);
-    res.json({ token });
+    res.json({ token, email: user.email, name: user.name, id: user._id });
   } catch (err) {
     console.error('Error during login:', err);
     next(err); // Forward error to the error handler middleware
   }
 };
+
+

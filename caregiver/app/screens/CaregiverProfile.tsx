@@ -7,6 +7,7 @@ import Tabs from '../components/Tabs';
 import Skills from '../components/Skills';
 import Reviews from '../components/Reviews';
 import ActionButtons from '../components/ActionButtons';
+import API_ENDPOINTS from '../../config/apiEndpoints';
 
 type Props = {
   navigation: any;
@@ -15,41 +16,61 @@ type Props = {
 
 const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('Skills');
-  const [caregiverData, setCaregiverData] = useState<any>(null);
-  const caregiverId = route.params?.caregiver?.id;
+  const [caregiverData, setCaregiverData] = useState<any>(route.params?.caregiver || null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsFetched, setReviewsFetched] = useState(false);
+  const caregiverId = caregiverData?._id;
 
   useEffect(() => {
-    if (caregiverId) {
-      axios
-        .get(`https://api.mockaron.com/mock/m0cbafdz7b/all-caregivers?id=1234`)
-        .then((response) => {
-          setCaregiverData(response.data);
-        })
-        .catch((error) => {
-          console.error('Error fetching caregiver details:', error);
-        });
+    console.log('CaregiverProfile mounted with data:', caregiverData);
+  }, []);
+
+  const fetchReviews = async (id: string) => {
+    try {
+      console.log('Fetching reviews for caregiver ID:', id);
+      const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_BY_RECEIVER_ID(id));
+      console.log('Reviews fetched:', response.data);
+      setReviews(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
+        console.log('No reviews found for this caregiver');
+        setReviews([]);
+      } else {
+        console.error('Error fetching reviews:', error);
+      }
+    } finally {
+      setReviewsFetched(true);
     }
-  }, [caregiverId]);
+  };
 
   const handleTabPress = (tab: string) => {
+    console.log('Tab pressed:', tab);
     setActiveTab(tab);
+    if (tab === 'Reviews' && !reviewsFetched && caregiverId) {
+      fetchReviews(caregiverId);
+    }
   };
 
   const handleBookVisit = () => {
-    navigation.navigate('BookVisitScreen');
+    console.log('Navigating to BookVisitScreen with caregiver data:', caregiverData);
+    navigation.navigate('BookVisitScreen', { caregiver: caregiverData });
   };
 
   const handleGoBack = () => {
+    console.log('Going back to previous screen');
     navigation.goBack();
   };
 
   if (!caregiverData) {
+    console.log('Caregiver data is not available yet');
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
       </View>
     );
   }
+
+  console.log('Rendering CaregiverProfile with data:', caregiverData);
 
   return (
     <View style={styles.container}>
@@ -59,7 +80,8 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
           name={caregiverData.name}
           experience={`${caregiverData.experience} Year(s) Experience in ${caregiverData.category}`}
           rating={caregiverData.rating}
-          displayImage={caregiverData.displayImage}
+          displayImage={caregiverData.imageUrl}
+          defaultImage={require('../../assets/defaultProfileImage.png')} 
         />
         <CaregiverStats
           category={caregiverData.category}
@@ -68,9 +90,9 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
         />
         <Tabs activeTab={activeTab} onTabPress={handleTabPress} />
         {activeTab === 'Skills' ? (
-          <Skills skills={caregiverData.skills ?? ''} />
+          <Skills skills={caregiverData.skills ?? []} />
         ) : (
-          <Reviews reviews={Object.values(caregiverData.reviews ?? {})} />
+          <Reviews reviews={reviews} />
         )}
       </ScrollView>
       <ActionButtons onBookVisit={handleBookVisit} onGoBack={handleGoBack} />

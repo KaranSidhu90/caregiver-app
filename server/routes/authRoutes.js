@@ -9,18 +9,18 @@ const authController = require('../controllers/authController');
  *     Auth:
  *       type: object
  *       required:
- *         - email
- *         - password
+ *         - phoneNumber
+ *         - passcode
  *       properties:
- *         email:
+ *         phoneNumber:
  *           type: string
- *           description: The user's email
- *         password:
+ *           description: The user's phone number
+ *         passcode:
  *           type: string
- *           description: The user's password
+ *           description: The user's passcode
  *       example:
- *         email: john@example.com
- *         password: password123
+ *         phoneNumber: "+11231231234"
+ *         passcode: "1234"
  *     User:
  *       type: object
  *       required:
@@ -189,14 +189,23 @@ router.post('/register', authController.register);
  *               properties:
  *                 token:
  *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 id:
+ *                   type: string
  *             example:
  *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               email: "john@example.com"
+ *               name: "John Doe"
+ *               id: "60d21b4667d0d8992e610c85"
  *       400:
- *         description: Invalid email or password
+ *         description: Invalid phone number or passcode
  *         content:
  *           application/json:
  *             example:
- *               message: Invalid email or password
+ *               message: Invalid phone number or passcode
  *       500:
  *         description: Some server error
  *         content:

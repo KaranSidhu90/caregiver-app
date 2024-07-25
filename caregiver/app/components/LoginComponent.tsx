@@ -11,6 +11,10 @@ import {
 } from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import RegistrationHeader from './RegistrationHeader';
+import API_ENDPOINTS from '../../config/apiEndpoints';
+import axios from 'axios';
+import { setAuthToken } from '../../utils/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = {
   navigation: any;
@@ -30,62 +34,92 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const phoneNumber = phoneInputRef.current?.getValue() || '';
     const passcodeString = passcode.join('');
 
-    if (phoneNumber === '+11231231234' && passcodeString === '1234') {
-      navigation.navigate('HomeInternal');
-    } else {
-      Alert.alert('Error', 'Invalid phone number or passcode.');
+    console.log('Phone Number:', phoneNumber); // Debugging line
+    console.log('Passcode:', passcodeString); // Debugging line
+
+    if (!phoneInputRef.current?.isValidNumber()) {
+      Alert.alert('Error', 'Invalid phone number.');
+      return;
+    }
+
+    const loginPayload = {
+      phoneNumber: phoneNumber, // Changed to phoneNumber
+      passcode: passcodeString,
+    };
+
+    console.log('Login Payload:', loginPayload); // Debugging line
+
+    try {
+      const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
+
+      if (response.status === 200) {
+        const { token, email, name, id } = response.data;
+        await setAuthToken(token);
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('userName', name);
+        await AsyncStorage.setItem('userId', id);
+        navigation.navigate('HomeInternal');
+      } else {
+        Alert.alert('Error', 'Invalid phone number or passcode.');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Login failed with response:', error.response.data);
+        Alert.alert('Error', `Login failed: ${error.response.data.message}`);
+      } else {
+        console.error('Login failed:', error);
+        Alert.alert('Error', 'Login failed. Please try again.');
+      }
     }
   };
 
   return (
-    
     <View style={styles.container}>
-    <RegistrationHeader title="LOGIN" step="" icon="hands" />
-    <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <View style={styles.formContainer}>
-          
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Phone Number</Text>
-            <PhoneInput
-              ref={phoneInputRef}
-              initialCountry="ca"
-              autoFormat={true}
-              textProps={{
-                placeholder: "Enter your phone number",
-                keyboardType: "phone-pad",
-                returnKeyType: "next",
-                style: styles.input,
-                maxLength: 15,
-              }}
-            />
-          </View>
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Passcode</Text>
-            <View style={styles.passcodeContainer}>
-              {passcode.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  style={styles.passcodeInput}
-                  value={digit}
-                  onChangeText={(value) => handlePasscodeChange(index, value)}
-                  keyboardType="numeric"
-                  maxLength={1}
-                  ref={(ref) => (passcodeRefs.current[index] = ref)}
-                />
-              ))}
+      <RegistrationHeader title="LOGIN" step="" icon="hands" />
+      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <View style={styles.formContainer}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <PhoneInput
+                ref={phoneInputRef}
+                initialCountry="ca"
+                autoFormat={true}
+                textProps={{
+                  placeholder: "Enter your phone number",
+                  keyboardType: "phone-pad",
+                  returnKeyType: "next",
+                  style: styles.input,
+                  maxLength: 15,
+                }}
+              />
             </View>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Passcode</Text>
+              <View style={styles.passcodeContainer}>
+                {passcode.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    style={styles.passcodeInput}
+                    value={digit}
+                    onChangeText={(value) => handlePasscodeChange(index, value)}
+                    keyboardType="numeric"
+                    maxLength={1}
+                    ref={(ref) => (passcodeRefs.current[index] = ref)}
+                  />
+                ))}
+              </View>
+            </View>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };

@@ -6,52 +6,50 @@ type Props = {
   experience: string;
   rating: number;
   displayImage: string;
+  defaultImage: any; // Add this prop to pass the default image
 };
 
-const CaregiverDetails: React.FC<Props> = ({ name, experience, rating, displayImage }) => {
+const CaregiverDetails: React.FC<Props> = ({ name, experience, rating, displayImage, defaultImage }) => {
+  const [imageSource, setImageSource] = React.useState(displayImage ? { uri: displayImage } : defaultImage);
+
   return (
-    <View style={styles.detailsContainer}>
+    <View style={styles.container}>
       <Image
-        source={{ uri: displayImage }}
+        source={imageSource}
         style={styles.profileImage}
-        resizeMode="cover"
+        onError={() => setImageSource(defaultImage)}
       />
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.experience}>{experience}</Text>
-      <Text style={styles.rating}>★ {rating}</Text>
+      <Text style={styles.rating}>{`Rating: ${rating}`}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  detailsContainer: {
+  container: {
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
     marginVertical: 20,
   },
   profileImage: {
-    width: 116,
-    height: 116,
-    borderRadius: 58,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     marginBottom: 10,
   },
   name: {
-    fontFamily: 'Poppins-Semibold',
-    fontSize: 22,
+    fontSize: 20,
+    fontFamily: 'Poppins-Bold',
     color: '#4A4A4A',
-    marginBottom: 5,
   },
   experience: {
-    fontFamily: 'Poppins-Regular',
     fontSize: 16,
+    fontFamily: 'Poppins-Regular',
     color: '#4A4A4A',
-    marginBottom: 5,
   },
   rating: {
-    fontFamily: 'Poppins-Regular',
     fontSize: 16,
+    fontFamily: 'Poppins-Regular',
     color: '#4A4A4A',
   },
 });

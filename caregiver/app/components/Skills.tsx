@@ -2,16 +2,14 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 
 type Props = {
-  skills: string;
+  skills: string[];
 };
 
 const Skills: React.FC<Props> = ({ skills }) => {
-  const skillsArray = skills ? skills.split(', ') : [];
-
   return (
     <View style={styles.container}>
-      {skillsArray.length > 0 ? (
-        skillsArray.map((skill, index) => (
+      {skills.length > 0 ? (
+        skills.map((skill, index) => (
           <View key={index} style={styles.skillItem}>
             <Text style={styles.bullet}>•</Text>
             <Text style={styles.skillText}>{skill}</Text>

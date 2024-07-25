@@ -51,14 +51,16 @@ exports.getBookingsBySeniorId = async (req, res, next) => {
     const bookings = await Booking.find({ seniorId });
 
     if (!bookings.length) {
-      return res.status(404).json({ message: 'No bookings found for this senior' });
+      return res.status(200).json([]); // Return an empty array if no bookings are found
     }
 
     res.status(200).json(bookings);
   } catch (err) {
+    console.error('Error fetching bookings by senior ID:', err);
     next(err);
   }
 };
+
 
 exports.updateBookingStatus = async (req, res, next) => {
   try {

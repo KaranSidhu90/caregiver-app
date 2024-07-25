@@ -6,15 +6,16 @@ import AnimatedPolygon from './AnimatedPolygon';
 type Props = {
   name: string;
   timeOfDay: string;
+  navigation: any; // Add navigation prop
 };
 
-const DashboardHeader: React.FC<Props> = ({ name, timeOfDay }) => {
+const DashboardHeader: React.FC<Props> = ({ name, timeOfDay, navigation }) => {
   return (
     <View style={styles.headerContainer}>
       <AnimatedPolygon delay={0} toValue={0} />
-      <AnimatedPolygon delay={0} toValue={70}/>
+      <AnimatedPolygon delay={0} toValue={70} />
       <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
