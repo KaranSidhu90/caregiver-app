@@ -35,6 +35,7 @@ export const getUserData = async () => {
 export const clearUserData = async () => {
   try {
     const userId = await AsyncStorage.getItem('userId');
+    console.log('Clearing user data for userId:', userId); // Debugging line
     if (userId) {
       await AsyncStorage.removeItem(userId);
       await AsyncStorage.removeItem('userId');
@@ -46,7 +47,6 @@ export const clearUserData = async () => {
 
 export const getAllUsers = async () => {
   try {
-    debugger;
     const keys = await AsyncStorage.getAllKeys();
     const userKeys = keys.filter(key => key.startsWith('user_'));
     const users = await AsyncStorage.multiGet(userKeys);
@@ -59,9 +59,7 @@ export const getAllUsers = async () => {
 
 export const checkLoginCredentials = async (phoneNumber: string, passcode: string) => {
   try {
-    debugger;
     const users = await getAllUsers();
-    debugger;
     return users.find((user: any) => user.phoneNumber === phoneNumber && user.passcode === passcode);
   } catch (error) {
     console.error('Error checking login credentials:', error);

@@ -312,4 +312,75 @@ router.put('/:bookingId', authMiddleware, bookingController.updateBookingStatus)
  */
 router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
 
+/**
+ * @swagger
+ * /bookings/caregiver/slots/{caregiverId}/{status}:
+ *   get:
+ *     summary: Get booking slots for a caregiver by status
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: caregiverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The caregiver ID
+ *       - in: path
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [Pending, Accepted, Cancelled]
+ *         description: The booking status
+ *     responses:
+ *       200:
+ *         description: List of booking slots for the caregiver
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   caregiverId:
+ *                     type: string
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                   morning:
+ *                     type: boolean
+ *                   afternoon:
+ *                     type: boolean
+ *                   evening:
+ *                     type: boolean
+ *                   isFullyBooked:
+ *                     type: boolean
+ *                 example:
+ *                   caregiverId: "60c72b319b1d4c3f2c7e25a9"
+ *                   date: "2023-07-10"
+ *                   morning: true
+ *                   afternoon: false
+ *                   evening: true
+ *                   isFullyBooked: false
+ *       400:
+ *         description: Invalid caregiver ID
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid caregiver ID"
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Internal server error"
+ */
+
+router.get('/caregiver/slots/:caregiverId/:status', authMiddleware, bookingController.getBookingSlotsByCaregiverId);
+
+
+
+
 module.exports = router;

@@ -46,14 +46,17 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    const loginPayload = {
-      phoneNumber: phoneNumber, // Changed to phoneNumber
-      passcode: passcodeString,
-    };
-
-    console.log('Login Payload:', loginPayload); // Debugging line
-
     try {
+      await AsyncStorage.clear(); // Clear all data in AsyncStorage
+      console.log('AsyncStorage cleared.'); // Debugging line
+
+      const loginPayload = {
+        phoneNumber: phoneNumber,
+        passcode: passcodeString,
+      };
+
+      console.log('Login Payload:', loginPayload); // Debugging line
+
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
 
       if (response.status === 200) {

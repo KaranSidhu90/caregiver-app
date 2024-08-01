@@ -1,4 +1,6 @@
 const Booking = require('../models/Booking');
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 const { createBookingNotification, updateBookingNotification, deleteBookingNotification } = require('../middleware/notificationMiddleware');
 
 exports.createBooking = async (req, res, next) => {
@@ -62,6 +64,10 @@ exports.getBookingsBySeniorId = async (req, res, next) => {
 };
 
 
+
+
+
+
 exports.updateBookingStatus = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
@@ -111,5 +117,67 @@ exports.deleteBooking = async (req, res, next) => {
     res.status(200).json({ message: 'Booking deleted successfully' });
   } catch (err) {
     next(err);
+  }
+};
+
+
+exports.getBookingSlotsByCaregiverId = async (req, res, next) => {
+  try {
+    const { caregiverId, status } = req.params;
+
+    console.log('Received caregiverId:', caregiverId);
+    console.log('Received status:', status);
+
+    if (!ObjectId.isValid(caregiverId)) {
+      console.log('Invalid caregiver ID:', caregiverId);
+      return res.status(400).json({ message: 'Invalid caregiver ID' });
+    }
+
+    const cgId = new ObjectId(caregiverId);
+    console.log('Converted caregiverId to ObjectId:', cgId);
+
+    const query = { caregiverId: cgId };
+
+    if (status) {
+      query.status = status;
+    }
+
+    console.log('Query:', query);
+
+    const bookings = await Booking.find(query);
+    console.log('Bookings found:', bookings.length);
+
+    if (!bookings.length) {
+      console.log('No bookings found for this caregiver');
+      return res.status(200).json([]); // Return an empty array if no bookings are found
+    }
+
+    const slotsByDate = {};
+
+    bookings.forEach(booking => {
+      const date = booking.date.toISOString().split('T')[0]; // Format date to YYYY-MM-DD
+      if (!slotsByDate[date]) {
+        slotsByDate[date] = {
+          caregiverId,
+          date,
+          morning: false,
+          afternoon: false,
+          evening: false,
+          isFullyBooked: false
+        };
+      }
+
+      slotsByDate[date].morning = slotsByDate[date].morning || booking.slots.morning;
+      slotsByDate[date].afternoon = slotsByDate[date].afternoon || booking.slots.afternoon;
+      slotsByDate[date].evening = slotsByDate[date].evening || booking.slots.evening;
+      slotsByDate[date].isFullyBooked = slotsByDate[date].morning && slotsByDate[date].afternoon && slotsByDate[date].evening;
+    });
+
+    const result = Object.values(slotsByDate);
+    console.log('Result:', result);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error('Error fetching booking slots by caregiver ID:', err);
+    res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
   }
 };

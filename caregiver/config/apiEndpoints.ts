@@ -18,6 +18,8 @@ const API_ENDPOINTS = {
         GET_BY_SENIOR_ID: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}`,
         UPDATE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
         DELETE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
+        GET_SLOTS_DAY: (caregiverId: string, date: string) => `${BASE_URL}/bookings/slots/${caregiverId}/${date}`,
+        GET_ALL_SLOTS: (caregiverId: string, status: string) => `${BASE_URL}/bookings/caregiver/slots/${caregiverId}/${status}`,
     },
     REVIEWS: {
         ADD: `${BASE_URL}/reviews`,

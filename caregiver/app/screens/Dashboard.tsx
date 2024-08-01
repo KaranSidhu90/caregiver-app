@@ -90,8 +90,8 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleCaregiverPress = (caregiver: any) => {
-    console.log('Caregiver pressed:', caregiver); // Log the caregiver object
-    navigation.navigate('CaregiverProfile', { caregiver });
+    console.log('Caregiver pressed:', caregiver); 
+    navigation.navigate('Profile', { caregiver });
   };
 
   if (loading) {
@@ -104,7 +104,7 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <DashboardHeader name={userName} timeOfDay={timeOfDayGreeting} navigation={navigation} /> {/* Pass navigation prop */}
+      <DashboardHeader name={userName} timeOfDay={timeOfDayGreeting} navigation={navigation} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.dataContainer}>
           {trialVisitsRemaining !== null && (

@@ -1,7 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, TextInput, Text } from 'react-native';
 
-const AdditionalDetails: React.FC = () => {
+type Props = {
+  onInfoChange: (info: string) => void;
+};
+
+const AdditionalDetails: React.FC<Props> = ({ onInfoChange }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Additional</Text>
@@ -10,6 +14,7 @@ const AdditionalDetails: React.FC = () => {
         placeholder="Share any other details you think caregivers should know. Please do not enter any information that is critical to your security"
         multiline
         numberOfLines={4}
+        onChangeText={onInfoChange}
       />
     </View>
   );

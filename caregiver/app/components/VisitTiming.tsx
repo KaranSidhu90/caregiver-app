@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
-const VisitTiming: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState('Morning');
+type Props = {
+  onSlotsChange: (slots: { morning: boolean; afternoon: boolean; evening: boolean }) => void;
+};
+
+const VisitTiming: React.FC<Props> = ({ onSlotsChange }) => {
+  const [selectedOption, setSelectedOption] = useState<string>('Morning');
+
+  useEffect(() => {
+    // Preselect the earliest available slot
+    onSlotsChange({
+      morning: true,
+      afternoon: false,
+      evening: false,
+    });
+  }, [onSlotsChange]);
 
   const visitOptions = [
     { label: 'Morning', subLabel: '8AM - 12PM' },
     { label: 'Afternoon', subLabel: '1PM - 5PM' },
     { label: 'Evening', subLabel: '6PM - 10PM' },
   ];
+
+  const handleOptionPress = (option: string) => {
+    setSelectedOption(option);
+
+    onSlotsChange({
+      morning: option === 'Morning',
+      afternoon: option === 'Afternoon',
+      evening: option === 'Evening',
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -21,7 +44,7 @@ const VisitTiming: React.FC = () => {
               styles.option,
               selectedOption === option.label && styles.selectedOption,
             ]}
-            onPress={() => setSelectedOption(option.label)}
+            onPress={() => handleOptionPress(option.label)}
           >
             <Text
               style={[

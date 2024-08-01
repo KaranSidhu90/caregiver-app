@@ -50,7 +50,7 @@ const CaregiverCard: React.FC<Props> = ({ caregiver, navigation }) => {
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('CaregiverProfile', { caregiver })}
+      onPress={() => navigation.navigate('Profile', { caregiver })}
     >
       <Image
         source={{ uri: avatarUrl }}
