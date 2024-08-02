@@ -35,7 +35,7 @@ export const getUserData = async () => {
 export const clearUserData = async () => {
   try {
     const userId = await AsyncStorage.getItem('userId');
-    console.log('Clearing user data for userId:', userId); // Debugging line
+    
     if (userId) {
       await AsyncStorage.removeItem(userId);
       await AsyncStorage.removeItem('userId');

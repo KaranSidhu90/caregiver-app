@@ -5,10 +5,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
   Alert,
-  KeyboardAvoidingView,
-  ScrollView,
+  Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import PhoneInput from 'react-native-phone-input';
 import RegistrationHeader from './RegistrationHeader';
 import API_ENDPOINTS from '../../config/apiEndpoints';
@@ -34,12 +36,15 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handlePasscodeKeyPress = (index: number, key: string) => {
+    if (key === 'Backspace' && passcode[index] === '' && index > 0) {
+      passcodeRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleLogin = async () => {
     const phoneNumber = phoneInputRef.current?.getValue() || '';
     const passcodeString = passcode.join('');
-
-    console.log('Phone Number:', phoneNumber); // Debugging line
-    console.log('Passcode:', passcodeString); // Debugging line
 
     if (!phoneInputRef.current?.isValidNumber()) {
       Alert.alert('Error', 'Invalid phone number.');
@@ -47,44 +52,43 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     }
 
     try {
-      await AsyncStorage.clear(); // Clear all data in AsyncStorage
-      console.log('AsyncStorage cleared.'); // Debugging line
+      await AsyncStorage.clear();
 
       const loginPayload = {
-        phoneNumber: phoneNumber,
+        phoneNumber,
         passcode: passcodeString,
       };
 
-      console.log('Login Payload:', loginPayload); // Debugging line
-
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
-
       if (response.status === 200) {
         const { token, email, name, id } = response.data;
         await setAuthToken(token);
         await AsyncStorage.setItem('userEmail', email);
         await AsyncStorage.setItem('userName', name);
         await AsyncStorage.setItem('userId', id);
-        navigation.navigate('HomeInternal');
+        navigation.navigate('AfterAuth');
       } else {
         Alert.alert('Error', 'Invalid phone number or passcode.');
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.error('Login failed with response:', error.response.data);
         Alert.alert('Error', `Login failed: ${error.response.data.message}`);
       } else {
-        console.error('Login failed:', error);
         Alert.alert('Error', 'Login failed. Please try again.');
       }
     }
   };
 
   return (
-    <View style={styles.container}>
-      <RegistrationHeader title="LOGIN" step="" icon="hands" />
-      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled>
-        <ScrollView contentContainerStyle={styles.scrollView}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <RegistrationHeader title="LOGIN" step="" icon="hands" />
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          enableOnAndroid={true}
+          enableAutomaticScroll={Platform.OS === 'ios'}
+          extraScrollHeight={20}
+        >
           <View style={styles.formContainer}>
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>Phone Number</Text>
@@ -110,6 +114,7 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
                     style={styles.passcodeInput}
                     value={digit}
                     onChangeText={(value) => handlePasscodeChange(index, value)}
+                    onKeyPress={({ nativeEvent }) => handlePasscodeKeyPress(index, nativeEvent.key)}
                     keyboardType="numeric"
                     maxLength={1}
                     ref={(ref) => (passcodeRefs.current[index] = ref)}
@@ -120,22 +125,24 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.registerText}>
+                Don't have an account? <Text style={styles.registerLink}>Register Here</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+        </KeyboardAwareScrollView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  scrollView: {
+  scrollViewContent: {
     flexGrow: 1,
     justifyContent: 'center',
   },
@@ -187,6 +194,17 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     color: '#fff',
+    fontFamily: 'Poppins-Medium',
+  },
+  registerText: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    fontFamily: 'Poppins-Regular',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  registerLink: {
+    color: '#295259',
     fontFamily: 'Poppins-Medium',
   },
 });

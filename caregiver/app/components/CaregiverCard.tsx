@@ -2,19 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import axios from 'axios';
 import API_ENDPOINTS from '../../config/apiEndpoints';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type Props = {
   caregiver: {
     _id: string;
     name: string;
     experience: string;
-    rating: number;
-    imageUrl?: string; 
+    rating?: number; // Make rating optional
+    imageUrl?: string;
   };
   navigation: any;
+  distance?: string; // Add distance as an optional prop
 };
 
-const CaregiverCard: React.FC<Props> = ({ caregiver, navigation }) => {
+const CaregiverCard: React.FC<Props> = ({ caregiver, navigation, distance }) => {
   const [averageRating, setAverageRating] = useState<string | number | null>(null);
 
   const avatarUrl = caregiver.imageUrl
@@ -30,16 +32,16 @@ const CaregiverCard: React.FC<Props> = ({ caregiver, navigation }) => {
         if (reviews.length > 0) {
           const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
           const average = totalRating / reviews.length;
-          setAverageRating(parseFloat(average.toFixed(1))); 
+          setAverageRating(parseFloat(average.toFixed(1)));
         } else {
-          setAverageRating('Not Rated'); 
+          setAverageRating('Not Rated');
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
           setAverageRating('Not Rated'); // On 404 error, set rating to "Not Rated"
         } else {
           console.error('Error fetching reviews:', error);
-          setAverageRating('Trouble Loading Rating'); 
+          setAverageRating('Trouble Loading Rating');
         }
       }
     };
@@ -62,6 +64,12 @@ const CaregiverCard: React.FC<Props> = ({ caregiver, navigation }) => {
         <Text style={styles.caregiverExperience}>{caregiver.experience} Year(s) Experience</Text>
         <Text style={styles.caregiverRating}>★ {averageRating !== null ? averageRating : 'N/A'}</Text>
       </View>
+      {distance && (
+        <View style={styles.distanceContainer}>
+          <Icon name="location-pin" size={20} color="#295259" />
+          <Text style={styles.distanceText}>{distance}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -82,6 +90,7 @@ const styles = StyleSheet.create({
   },
   caregiverInfo: {
     marginLeft: 10,
+    flex: 2,
   },
   caregiverName: {
     fontSize: 16,
@@ -99,6 +108,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#4A4A4A',
     marginTop: 5,
+  },
+  distanceContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  distanceText: {
+    marginTop: 5,
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#4A4A4A',
   },
 });
 

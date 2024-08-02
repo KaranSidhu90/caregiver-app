@@ -1,7 +1,7 @@
 // config/apiEndpoints.ts
 
-// const BASE_URL = 'http://192.168.40.59:5000'; 
-const BASE_URL = 'http://142.3.72.83:5000'; 
+const BASE_URL = 'http://192.168.40.59:5000'; 
+// const BASE_URL = 'http://142.3.72.83:5000'; 
 
 const API_ENDPOINTS = {
     AUTH: {

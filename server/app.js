@@ -63,11 +63,11 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB');
+  
 });
 
 mongoose.connection.on('error', (err) => {
-  console.log(`MongoDB connection error: ${err}`);
+  
 });
 
 // Routes
@@ -83,7 +83,7 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  
   if (process.env.NODE_ENV !== 'production') {
     import('open').then(open => open.default(`http://localhost:${PORT}/api-docs`));
   } else {

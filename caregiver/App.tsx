@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import AuthNavigator from './navigation/AuthNavigator';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'react-native';
+import AfterAuthNavigator from './navigation/AfterAuthNavigator';
 
 export default function App() {
   const [fontsLoaded] = useFonts({

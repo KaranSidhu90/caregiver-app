@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
-type Props = {
-  onSlotsChange: (slots: { morning: boolean; afternoon: boolean; evening: boolean }) => void;
+type Slots = {
+  morning: boolean;
+  afternoon: boolean;
+  evening: boolean;
 };
 
-const VisitTiming: React.FC<Props> = ({ onSlotsChange }) => {
-  const [selectedOption, setSelectedOption] = useState<string>('Morning');
+type Props = {
+  onSlotsChange: (slots: Slots) => void;
+  bookedSlots: Slots;
+};
+
+const VisitTiming: React.FC<Props> = ({ onSlotsChange, bookedSlots }) => {
+  const [selectedOption, setSelectedOption] = useState<keyof Slots>('morning');
 
   useEffect(() => {
     // Preselect the earliest available slot
@@ -18,18 +25,18 @@ const VisitTiming: React.FC<Props> = ({ onSlotsChange }) => {
   }, [onSlotsChange]);
 
   const visitOptions = [
-    { label: 'Morning', subLabel: '8AM - 12PM' },
-    { label: 'Afternoon', subLabel: '1PM - 5PM' },
-    { label: 'Evening', subLabel: '6PM - 10PM' },
+    { label: 'Morning', subLabel: '8AM - 12PM', key: 'morning' as keyof Slots },
+    { label: 'Afternoon', subLabel: '1PM - 5PM', key: 'afternoon' as keyof Slots },
+    { label: 'Evening', subLabel: '6PM - 10PM', key: 'evening' as keyof Slots },
   ];
 
-  const handleOptionPress = (option: string) => {
+  const handleOptionPress = (option: keyof Slots) => {
     setSelectedOption(option);
 
     onSlotsChange({
-      morning: option === 'Morning',
-      afternoon: option === 'Afternoon',
-      evening: option === 'Evening',
+      morning: option === 'morning',
+      afternoon: option === 'afternoon',
+      evening: option === 'evening',
     });
   };
 
@@ -42,14 +49,17 @@ const VisitTiming: React.FC<Props> = ({ onSlotsChange }) => {
             key={option.label}
             style={[
               styles.option,
-              selectedOption === option.label && styles.selectedOption,
+              selectedOption === option.key && styles.selectedOption,
+              bookedSlots[option.key] && styles.disabledOption,
             ]}
-            onPress={() => handleOptionPress(option.label)}
+            onPress={() => handleOptionPress(option.key)}
+            disabled={bookedSlots[option.key]} // Disable if the slot is booked
           >
             <Text
               style={[
                 styles.optionText,
-                selectedOption === option.label && styles.selectedOptionText,
+                selectedOption === option.key && styles.selectedOptionText,
+                bookedSlots[option.key] && styles.disabledOptionText,
               ]}
             >
               {option.label}
@@ -57,7 +67,8 @@ const VisitTiming: React.FC<Props> = ({ onSlotsChange }) => {
             <Text
               style={[
                 styles.optionSubText,
-                selectedOption === option.label && styles.selectedOptionText,
+                selectedOption === option.key && styles.selectedOptionText,
+                bookedSlots[option.key] && styles.disabledOptionText,
               ]}
             >
               {option.subLabel}
@@ -107,6 +118,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
     color: '#4A4A4A',
+  },
+  disabledOption: {
+    backgroundColor: '#E0E0E0',
+  },
+  disabledOptionText: {
+    color: '#A0A0A0',
   },
 });
 

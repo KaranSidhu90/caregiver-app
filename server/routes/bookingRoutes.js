@@ -124,6 +124,13 @@ router.post('/', authMiddleware, bookingController.createBooking);
  *         schema:
  *           type: string
  *         description: The caregiver ID
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [Pending, Accepted, Cancelled]
+ *         description: The booking status
  *     responses:
  *       200:
  *         description: List of bookings for the caregiver
@@ -175,6 +182,13 @@ router.get('/caregiver/:caregiverId', authMiddleware, bookingController.getBooki
  *         schema:
  *           type: string
  *         description: The senior ID
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [Pending, Accepted, Cancelled]
+ *         description: The booking status
  *     responses:
  *       200:
  *         description: List of bookings for the senior
@@ -211,6 +225,73 @@ router.get('/caregiver/:caregiverId', authMiddleware, bookingController.getBooki
  */
 router.get('/senior/:seniorId', authMiddleware, bookingController.getBookingsBySeniorId);
 
+
+/**
+ * @swagger
+ * /bookings/changeStatus/{bookingId}:
+ *   patch:
+ *     summary: Change the status of a booking
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: bookingId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The booking ID
+ *       - in: query
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [Pending, Accepted, Cancelled]
+ *         description: The new status for the booking
+ *     responses:
+ *       200:
+ *         description: Booking status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Booking'
+ *             example:
+ *               seniorId: "60c72b2f9b1d4c3f2c7e25a8"
+ *               caregiverId: "60c72b319b1d4c3f2c7e25a9"
+ *               date: "2023-07-10"
+ *               slots:
+ *                 morning: true
+ *                 afternoon: false
+ *                 evening: true
+ *               location:
+ *                 latitude: 50.4501
+ *                 longitude: 30.5234
+ *               additionalInfo: "Special instructions for the caregiver"
+ *               status: "Accepted"
+ *       400:
+ *         description: Invalid status
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid status"
+ *       404:
+ *         description: Booking not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Booking not found"
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Internal server error"
+ */
+router.patch('/changeStatus/:bookingId', authMiddleware, bookingController.changeBookingStatus);
+
+
+
+``
 /**
  * @swagger
  * /bookings/{bookingId}:

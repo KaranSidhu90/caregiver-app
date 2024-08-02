@@ -22,18 +22,36 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
   const caregiverId = caregiverData?._id;
 
   useEffect(() => {
-    console.log('CaregiverProfile mounted with data:', caregiverData);
-  }, []);
+    if (caregiverId && !reviewsFetched) {
+      fetchReviews(caregiverId);
+    }
+  }, [caregiverId, reviewsFetched]);
+
+  const fetchReviewerDetails = async (reviewerId: string) => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.USERS.GET_SENIOR_BY_ID(reviewerId));
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching reviewer details:', error);
+      return null;
+    }
+  };
 
   const fetchReviews = async (id: string) => {
     try {
-      console.log('Fetching reviews for caregiver ID:', id);
       const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_BY_RECEIVER_ID(id));
-      console.log('Reviews fetched:', response.data);
-      setReviews(response.data);
+      const reviews = await Promise.all(
+        response.data.map(async (review: any) => {
+          const reviewerDetails = await fetchReviewerDetails(review.reviewerId);
+          return {
+            ...review,
+            reviewerName: reviewerDetails ? reviewerDetails.name : 'Anonymous',
+          };
+        })
+      );
+      setReviews(reviews);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
-        console.log('No reviews found for this caregiver');
         setReviews([]);
       } else {
         console.error('Error fetching reviews:', error);
@@ -44,7 +62,6 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleTabPress = (tab: string) => {
-    console.log('Tab pressed:', tab);
     setActiveTab(tab);
     if (tab === 'Reviews' && !reviewsFetched && caregiverId) {
       fetchReviews(caregiverId);
@@ -52,25 +69,20 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleBookVisit = () => {
-    console.log('Navigating to BookVisitScreen with caregiver data:', caregiverData);
     navigation.navigate('BookVisitScreen', { caregiver: caregiverData });
   };
 
   const handleGoBack = () => {
-    console.log('Going back to previous screen');
     navigation.goBack();
   };
 
   if (!caregiverData) {
-    console.log('Caregiver data is not available yet');
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
       </View>
     );
   }
-
-  console.log('Rendering CaregiverProfile with data:', caregiverData);
 
   return (
     <View style={styles.container}>
@@ -81,7 +93,8 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
           experience={`${caregiverData.experience} Year(s) Experience in ${caregiverData.category}`}
           rating={caregiverData.rating}
           displayImage={caregiverData.imageUrl}
-          defaultImage={require('../../assets/defaultProfileImage.png')} 
+          defaultImage={require('../../assets/defaultProfileImage.png')}
+          caregiverId={caregiverData._id}
         />
         <CaregiverStats
           category={caregiverData.category}

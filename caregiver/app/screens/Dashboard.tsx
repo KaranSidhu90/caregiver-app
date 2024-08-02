@@ -90,7 +90,6 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleCaregiverPress = (caregiver: any) => {
-    console.log('Caregiver pressed:', caregiver); 
     navigation.navigate('Profile', { caregiver });
   };
 

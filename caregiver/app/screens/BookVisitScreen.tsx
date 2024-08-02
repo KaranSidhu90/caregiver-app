@@ -21,23 +21,59 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlots, setSelectedSlots] = useState({ morning: true, afternoon: false, evening: false });
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [availableDays, setAvailableDays] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<any>({});
 
   useEffect(() => {
-    const checkAsyncStorage = async () => {
+    const fetchAvailabilityAndBookings = async () => {
       try {
-        const keys = await AsyncStorage.getAllKeys();
-        const result = await AsyncStorage.multiGet(keys);
-        result.forEach(([key, value]) => {
-          console.log(`${key}: ${value}`);
-        });
+        if (!caregiver._id) {
+          Alert.alert('Error', 'Caregiver ID is missing.');
+          return;
+        }
+
+        const availabilityResponse = await axios.get(API_ENDPOINTS.AVAILABILITY.GET_BY_CAREGIVER_ID(caregiver._id));
+        const availability = availabilityResponse.data.availability;
+
+        const days = availability.map((item: any) => item.day);
+        setAvailableDays(days);
+
+        const closestAvailableDate = findClosestAvailableDate(days);
+        setSelectedDate(closestAvailableDate);
+
+        const bookingsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_ALL_SLOTS(caregiver._id, 'Accepted'));
+        const bookings = bookingsResponse.data;
+        const slots = bookings.reduce((acc: any, booking: any) => {
+          acc[booking.date] = {
+            morning: booking.morning,
+            afternoon: booking.afternoon,
+            evening: booking.evening,
+            isFullyBooked: booking.isFullyBooked,
+          };
+          return acc;
+        }, {});
+        setBookedSlots(slots);
       } catch (error) {
-        console.error('Error fetching AsyncStorage data:', error);
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'There was an error fetching data. Please try again.');
       }
     };
-    checkAsyncStorage();
-    // Preselect the current date
-    setSelectedDate(new Date().toISOString().split('T')[0]);
-  }, []);
+
+    fetchAvailabilityAndBookings();
+  }, [caregiver]);
+
+  const findClosestAvailableDate = (availableDays: string[]) => {
+    const today = new Date();
+    for (let i = 0; i < 90; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+      if (availableDays.includes(dayName)) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+    return today.toISOString().split('T')[0];
+  };
 
   const fetchSeniorAddress = async (seniorId: string) => {
     try {
@@ -51,9 +87,7 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const getLatLngFromAddress = async (address: string) => {
     try {
-      console.log('Address for Geocoding:', address); // Log the address
       const response = await axios.get(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_API_KEY}&q=${encodeURIComponent(address)}&format=json`);
-      console.log('LocationIQ API response:', response.data); // Log the API response
       const location = response.data[0];
       return {
         lat: location.lat,
@@ -94,10 +128,10 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
           longitude: location.lon,
         },
         additionalInfo: additionalInfo,
-        bookingStatus: 'Pending',
+        status: 'Pending',
       };
 
-      console.log('Booking Data:', bookingData); // Log the booking data
+      
 
       // Send the booking data to the CREATE endpoint
       await axios.post(API_ENDPOINTS.BOOKINGS.CREATE, bookingData);
@@ -128,8 +162,16 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
         enableAutomaticScroll={Platform.OS === 'ios'}
         extraScrollHeight={20}
       >
-        <VisitDatePicker onDateChange={setSelectedDate} caregiverId={caregiver._id} />
-        <VisitTiming onSlotsChange={setSelectedSlots} />
+        <VisitDatePicker 
+          onDateChange={setSelectedDate} 
+          caregiverId={caregiver._id} 
+          bookedSlots={bookedSlots} 
+          availableDays={availableDays}
+        />
+        <VisitTiming 
+          onSlotsChange={setSelectedSlots} 
+          bookedSlots={bookedSlots[selectedDate] || {}}
+        />
         <AdditionalDetails onInfoChange={setAdditionalInfo} />
       </KeyboardAwareScrollView>
       <ActionButtons onBookVisit={handleBookVisit} onGoBack={handleGoBack} />

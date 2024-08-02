@@ -1,65 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment';
-import axios from 'axios';
-import API_ENDPOINTS from '../../config/apiEndpoints';
 
-const VisitDatePicker: React.FC<{ onDateChange: (date: string) => void, caregiverId: string }> = ({ onDateChange, caregiverId }) => {
+type Props = {
+  onDateChange: (date: string) => void;
+  caregiverId: string;
+  bookedSlots: any;
+  availableDays: string[];
+};
+
+const VisitDatePicker: React.FC<Props> = ({ onDateChange, caregiverId, bookedSlots, availableDays }) => {
   const [selectedDate, setSelectedDate] = useState('');
-  const [availableDays, setAvailableDays] = useState<string[]>([]);
-  const [bookedSlots, setBookedSlots] = useState<any>({});
 
   useEffect(() => {
-    const fetchAvailabilityAndBookings = async () => {
-      try {
-        if (!caregiverId) {
-          Alert.alert('Error', 'Caregiver ID is missing.');
-          return;
-        }
-
-        const availabilityResponse = await axios.get(API_ENDPOINTS.AVAILABILITY.GET_BY_CAREGIVER_ID(caregiverId));
-        const availability = availabilityResponse.data.availability;
-
-        const days = availability.map((item: any) => item.day);
-        setAvailableDays(days);
-
-        const closestAvailableDate = findClosestAvailableDate(days);
-        setSelectedDate(closestAvailableDate);
-        onDateChange(closestAvailableDate);
-
-        // Fetch fully booked dates
-        const bookingsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_ALL_SLOTS(caregiverId, 'Accepted'));
-        const bookings = bookingsResponse.data;
-        const slots = bookings.reduce((acc: any, booking: any) => {
-          acc[booking.date] = {
-            morning: booking.morning,
-            afternoon: booking.afternoon,
-            evening: booking.evening,
-            isFullyBooked: booking.isFullyBooked,
-          };
-          return acc;
-        }, {});
-        setBookedSlots(slots);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        Alert.alert('Error', 'There was an error fetching data. Please try again.');
-      }
-    };
-
-    fetchAvailabilityAndBookings();
-  }, [caregiverId, onDateChange]);
+    const closestAvailableDate = findClosestAvailableDate(availableDays);
+    setSelectedDate(closestAvailableDate);
+    onDateChange(closestAvailableDate);
+  }, [availableDays, onDateChange]);
 
   const findClosestAvailableDate = (availableDays: string[]) => {
     const today = moment();
-    for (let i = 0; i < 90; i++) { // Limit to 3 months (approximately 90 days)
+    for (let i = 0; i < 90; i++) {
       const date = moment().add(i, 'days');
       const dayName = date.format('dddd');
       if (availableDays.includes(dayName)) {
         return date.format('YYYY-MM-DD');
       }
     }
-    return today.format('YYYY-MM-DD'); // Fallback to today if no available days are found
+    return today.format('YYYY-MM-DD');
   };
 
   const handleDateSelected = (date: string) => {
@@ -75,18 +44,16 @@ const VisitDatePicker: React.FC<{ onDateChange: (date: string) => void, caregive
   const getMarkedDates = () => {
     const markedDates: any = {};
 
-    for (let i = 0; i < 90; i++) { // Limit to 3 months (approximately 90 days)
+    for (let i = 0; i < 90; i++) {
       const date = moment().add(i, 'days').format('YYYY-MM-DD');
       const booking = bookedSlots[date];
 
       if (!isDayAvailable(date)) {
-        // Disable dates that are not available
         markedDates[date] = {
           disabled: true,
           disableTouchEvent: true,
         };
       } else if (booking) {
-        // Add dots based on booked slots
         const dots = [];
         if (booking.morning) dots.push({ key: 'morning', color: 'red', selectedDotColor: 'orange' });
         if (booking.afternoon) dots.push({ key: 'afternoon', color: 'red', selectedDotColor: 'orange' });
@@ -130,9 +97,9 @@ const VisitDatePicker: React.FC<{ onDateChange: (date: string) => void, caregive
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Visit Date</Text>
       <Calendar
-        current={selectedDate} // Set the initial date to the closest available date
-        minDate={moment().format('YYYY-MM-DD')} // Set the minimum date to today
-        maxDate={moment().add(3, 'months').format('YYYY-MM-DD')} // Set the maximum date to 3 months from today
+        current={selectedDate}
+        minDate={moment().format('YYYY-MM-DD')}
+        maxDate={moment().add(3, 'months').format('YYYY-MM-DD')}
         onDayPress={(day: { dateString: string }) => handleDateSelected(day.dateString)}
         markedDates={getMarkedDates()}
         markingType={'multi-dot'}

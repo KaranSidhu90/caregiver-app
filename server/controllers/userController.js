@@ -35,13 +35,13 @@ exports.getSeniorById = async (req, res, next) => {
 
 exports.getCaregiverById = async (req, res, next) => {
   try {
-    console.log('Fetching caregiver by ID:', req.params.id);
+    
     const caregiver = await Caregiver.findById(req.params.id);
     if (!caregiver) {
       console.warn('Caregiver not found for ID:', req.params.id);
       return res.status(404).json({ message: 'Caregiver not found' });
     }
-    console.log('Caregiver found:', caregiver);
+    
     res.json(caregiver);
   } catch (err) {
     console.error('Error fetching caregiver by ID:', err);

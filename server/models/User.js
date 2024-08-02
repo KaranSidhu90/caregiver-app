@@ -14,7 +14,8 @@ const UserSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   gender: {
     type: String,
@@ -98,6 +99,9 @@ const CaregiverSchema = new mongoose.Schema({
   },
   skills: {
     type: [String]
+  },
+  category: {
+    type: String,
   }
 });
 

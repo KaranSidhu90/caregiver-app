@@ -1,5 +1,4 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../app/screens/HomeScreen';
 import Login from '../app/screens/Login';
 import Registration from '../app/screens/Registration';
@@ -7,27 +6,24 @@ import CaregiverRegistration from '../app/screens/CaregiverRegistration';
 import HomeStackNavigator from '../app/screens/HomeInternal';
 import CaregiverProfile from '../app/screens/CaregiverProfile';
 import BookVisitScreen from '../app/screens/BookVisitScreen';
+import AfterAuthNavigator from './AfterAuthNavigator';
+import WithDrawerNavigator from './WithDrawerNavigator';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import Sidebar from '../app/components/Sidebar';
 
-const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
 const AuthNavigator = () => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen
+    <Drawer.Navigator screenOptions={{headerShown: false, swipeEnabled: false}} drawerContent={(props) => <Sidebar {...props} />}>
+      <Drawer.Screen
         name="Home"
         component={HomeScreen}
-        options={{ headerShown: false }}
       />
-      <Stack.Screen name="Login" component={Login}
-        options={{ headerShown: false }} />
-      <Stack.Screen name="Register" component={Registration}
-        options={{ headerShown: false }} />
-      <Stack.Screen name="CaregiverRegister" component={CaregiverRegistration} />
-      <Stack.Screen name="HomeInternal" component={HomeStackNavigator} options={{ headerShown: false}} />
-      <Stack.Screen name="Profile" component={CaregiverProfile} options={{headerBackTitle: ''}}/>
-      <Stack.Screen name="BookVisitScreen" component={BookVisitScreen} options={{headerBackTitle: ''}} />
-    
-    </Stack.Navigator>
+      <Drawer.Screen name="Login" component={Login} />
+      <Drawer.Screen name="Register" component={Registration} />
+      <Drawer.Screen name="AfterAuth" component={AfterAuthNavigator} />
+    </Drawer.Navigator>
   );
 };
 
