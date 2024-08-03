@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -8,24 +8,36 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Alert,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { saveUserData, getUserData, clearUserData } from '../helpers/storageHelper';
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import {
+  saveUserData,
+  getUserData,
+  clearUserData,
+} from "../helpers/storageHelper";
+import axios from "axios";
+import API_ENDPOINTS from "../../config/apiEndpoints";
+import { setAuthToken } from "../../utils/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = {
   navigation: any;
 };
 
 const careTypes = [
-  { label: 'Personal Care', value: 'personal_care', icon: 'user' },
-  { label: 'Medical Care', value: 'medkit', icon: 'medkit' },
-  { label: 'Companionship & Social', value: 'companionship_social', icon: 'users' },
-  { label: 'Household Help', value: 'home', icon: 'home' },
+  { label: "Personal Care", value: "personal_care", icon: "user" },
+  { label: "Medical Care", value: "medkit", icon: "medkit" },
+  {
+    label: "Companionship & Social",
+    value: "companionship_social",
+    icon: "users",
+  },
+  { label: "Household Help", value: "home", icon: "home" },
 ];
 
 const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
   const [selectedCareType, setSelectedCareType] = useState<string | null>(null);
-  const [passcode, setPasscode] = useState<string[]>(['', '', '', '']);
+  const [passcode, setPasscode] = useState<string[]>(["", "", "", ""]);
   const passcodeRefs = useRef<(TextInput | null)[]>([]);
 
   useEffect(() => {
@@ -34,7 +46,7 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
       if (userData) {
         setSelectedCareType(userData.careType || null);
         if (userData.passcode) {
-          setPasscode(userData.passcode.split(''));
+          setPasscode(userData.passcode.split(""));
         }
       }
     };
@@ -43,31 +55,64 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
 
   const handleFinish = async () => {
     if (!selectedCareType) {
-      Alert.alert('Error', 'Please select a type of care.');
+      Alert.alert("Error", "Please select a type of care.");
       return;
     }
-
-    if (passcode.some((digit) => digit === '')) {
-      Alert.alert('Error', 'Please enter the full passcode.');
+    if (passcode.some((digit) => digit === "")) {
+      Alert.alert("Error", "Please enter the full passcode.");
       return;
     }
 
     const userData = {
       careType: selectedCareType,
-      passcode: passcode.join(''),
+      passcode: passcode.join(""),
       registrationComplete: true,
     };
 
     await saveUserData(userData);
-    await clearUserData();
 
-    navigation.navigate('StatusScreen', {
-      status: 'success',
-      title: 'Account Created!',
-      message: 'Your account has been created successfully.',
-      duration: 5000,
-      onContinue: () => navigation.navigate('Dashboard'), 
-    });
+    handleRegister();
+  };
+
+  const handleRegister = async () => {
+    try {
+      const UserDataPayload = await getUserData();
+      console.log(UserDataPayload);
+
+      const response = await axios.post(
+        API_ENDPOINTS.AUTH.REGISTER,
+        UserDataPayload
+      );
+      console.log(response);
+
+      if (response.status === 200) {
+        const { token, email, name, id } = response.data;
+        await setAuthToken(token);
+        await AsyncStorage.setItem("userEmail", email);
+        await AsyncStorage.setItem("userName", name);
+        await AsyncStorage.setItem("userId", id);
+        navigation.navigate("StatusScreen", {
+          status: "success",
+          title: "Account Created!",
+          message: "Your account has been created successfully.",
+          duration: 5000,
+          onContinue: () => navigation.navigate("Dashboard"),
+        });
+      } else {
+        Alert.alert(
+          "Error",
+          "Sorry, our servers are busy right now. Please try later."
+        );
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error("Register failed with response:", error.response.data);
+        Alert.alert("Error", `Register failed: ${error.response.data.message}`);
+      } else {
+        console.error("Register failed:", error);
+        Alert.alert("Error", "Register failed. Please try again.");
+      }
+    }
   };
 
   const handlePasscodeChange = (index: number, value: string) => {
@@ -80,7 +125,11 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior="padding" enabled>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoidingView}
+      behavior="padding"
+      enabled
+    >
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.formContainer}>
           <Text style={styles.instructionText}>
@@ -99,13 +148,14 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
                 <Icon
                   name={care.icon}
                   size={32}
-                  color={selectedCareType === care.value ? '#fff' : '#295259'}
+                  color={selectedCareType === care.value ? "#fff" : "#295259"}
                   style={styles.careTypeIcon}
                 />
                 <Text
                   style={[
                     styles.careTypeText,
-                    selectedCareType === care.value && styles.selectedCareTypeText,
+                    selectedCareType === care.value &&
+                      styles.selectedCareTypeText,
                   ]}
                 >
                   {care.label}
@@ -129,16 +179,16 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#C2A27C' }]}
+              style={[styles.button, { backgroundColor: "#C2A27C" }]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={[styles.buttonText, { color: '#fff' }]}>BACK</Text>
+              <Text style={[styles.buttonText, { color: "#fff" }]}>BACK</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#295259' }]}
+              style={[styles.button, { backgroundColor: "#295259" }]}
               onPress={handleFinish}
             >
-              <Text style={[styles.buttonText, { color: '#fff' }]}>FINISH</Text>
+              <Text style={[styles.buttonText, { color: "#fff" }]}>FINISH</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -153,80 +203,80 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   formContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 25,
     margin: 10,
   },
   instructionText: {
-    fontFamily: 'Poppins-Regular',
-    color: '#4A4A4A',
+    fontFamily: "Poppins-Regular",
+    color: "#4A4A4A",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   careTypeTag: {
-    width: '48%',
+    width: "48%",
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 20,
     paddingVertical: 20,
     paddingHorizontal: 15,
     marginBottom: 20,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
   },
   selectedCareTypeTag: {
-    backgroundColor: '#295259',
+    backgroundColor: "#295259",
   },
   careTypeIcon: {
     marginBottom: 10,
   },
   careTypeText: {
-    color: '#4A4A4A',
-    textAlign: 'center',
+    color: "#4A4A4A",
+    textAlign: "center",
     fontSize: 16,
   },
   selectedCareTypeText: {
-    color: '#fff',
+    color: "#fff",
   },
   passcodeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginVertical: 20,
   },
   passcodeInput: {
-    width: '20%',
+    width: "20%",
     height: 50,
-    borderColor: '#295259',
+    borderColor: "#295259",
     borderWidth: 2,
     borderRadius: 10,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 24,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   button: {
-    width: '48%',
+    width: "48%",
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 35,
   },
   buttonText: {
     fontSize: 18,
-    fontFamily: 'Poppins-Medium',
+    fontFamily: "Poppins-Medium",
   },
 });
 

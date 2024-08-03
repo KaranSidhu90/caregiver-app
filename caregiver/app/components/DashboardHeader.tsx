@@ -1,21 +1,35 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import AnimatedPolygon from './AnimatedPolygon';
+import React from "react";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import AnimatedPolygon from "./AnimatedPolygon";
 
 type Props = {
   name: string;
   timeOfDay: string;
   navigation: any; // Add navigation prop
+  bgColor?: string;
 };
 
-const DashboardHeader: React.FC<Props> = ({ name, timeOfDay, navigation }) => {
+const DashboardHeader: React.FC<Props> = ({
+  name,
+  timeOfDay,
+  navigation,
+  bgColor,
+}) => {
   return (
-    <View style={styles.headerContainer}>
+    <View
+      style={[
+        styles.headerContainer,
+        { backgroundColor: bgColor ?? "#295259" },
+      ]}
+    >
       <AnimatedPolygon delay={0} toValue={0} />
       <AnimatedPolygon delay={0} toValue={70} />
       <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.openDrawer()}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.openDrawer()}
+        >
           <Icon name="bars" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
@@ -32,22 +46,21 @@ const DashboardHeader: React.FC<Props> = ({ name, timeOfDay, navigation }) => {
 
 const styles = StyleSheet.create({
   headerContainer: {
-    height: '35%',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: '#295259',
-    overflow: 'hidden',
-    position: 'relative',
+    height: "35%",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    overflow: "hidden",
+    position: "relative",
     paddingTop: 50,
-    zIndex : -999,
+    zIndex: -999,
     marginBottom: -70,
   },
   iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     paddingHorizontal: 20,
-    position: 'absolute',
+    position: "absolute",
     top: 10,
   },
   iconButton: {
@@ -55,22 +68,22 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
   },
   textContainer: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    width: '100%',
+    alignItems: "flex-start",
+    justifyContent: "center",
+    width: "100%",
     paddingHorizontal: 20,
-    position: 'absolute',
+    position: "absolute",
     bottom: 80,
   },
   greeting: {
-    fontFamily: 'Poppins-Medium',
-    color: '#fff',
+    fontFamily: "Poppins-Medium",
+    color: "#fff",
     fontSize: 20,
     marginBottom: 5,
   },
   timeOfDay: {
-    fontFamily: 'Poppins-Bold',
-    color: '#fff',
+    fontFamily: "Poppins-Bold",
+    color: "#fff",
     fontSize: 24,
   },
 });

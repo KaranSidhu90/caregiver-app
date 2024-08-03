@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import moment from 'moment';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { Calendar, DateData } from 'react-native-calendars';
 import BookingCard from './BookingCard';
+import { format, parseISO, isValid, addDays } from 'date-fns';
 
 type Props = {
   bookings: any[];
@@ -11,94 +11,45 @@ type Props = {
 
 const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [showCalendar, setShowCalendar] = useState(true);
-
-  useEffect(() => {
-    if (bookings.length > 0) {
-      setSelectedDate(moment(bookings[0].date).format('YYYY-MM-DD'));
-    }
-  }, [bookings]);
+  const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
 
   const handleDateSelected = (date: string) => {
-    if (selectedDate === date) {
-      setShowCalendar(!showCalendar);
-    } else {
-      setSelectedDate(date);
-      setShowCalendar(false);
-    }
-  };
-
-  const isDayBooked = (day: string) => {
-    return bookings.some(booking => moment(booking.date).format('YYYY-MM-DD') === day);
+    setSelectedDate(format(parseISO(date), 'EEEE, do MMM, yyyy'));
+    const formattedActualDate = format(addDays(parseISO(date), -1), 'yyyy-MM-dd');
+    setFilteredBookings(
+      bookings.filter((booking) => format(parseISO(booking.date), 'yyyy-MM-dd') === formattedActualDate)
+    );
   };
 
   const getMarkedDates = () => {
     const markedDates: any = {};
-
-    bookings.forEach(booking => {
-      const date = moment(booking.date).format('YYYY-MM-DD');
-      const dots = [];
-      if (booking.slots.morning) dots.push({ key: 'morning', color: 'red', selectedDotColor: 'orange' });
-      if (booking.slots.afternoon) dots.push({ key: 'afternoon', color: 'red', selectedDotColor: 'orange' });
-      if (booking.slots.evening) dots.push({ key: 'evening', color: 'red', selectedDotColor: 'orange' });
-
-      markedDates[date] = {
-        dots,
-        customStyles: {
-          container: {
-            backgroundColor: selectedDate === date ? '#295259' : undefined,
-          },
-          text: {
-            color: selectedDate === date ? 'white' : 'black',
-          },
-        },
-      };
+    bookings.forEach((booking) => {
+      const parsedDate = addDays(parseISO(booking.date), 1);
+      if (isValid(parsedDate)) {
+        const date = format(parsedDate, 'yyyy-MM-dd');
+        markedDates[date] = { marked: true, selectedColor: '#295259' };
+      }
     });
-
     if (selectedDate) {
       markedDates[selectedDate] = {
         selected: true,
         selectedColor: '#295259',
         selectedTextColor: 'white',
-        customStyles: {
-          container: {
-            backgroundColor: '#295259',
-          },
-          text: {
-            color: 'white',
-          },
-        },
       };
     }
-
     return markedDates;
-  };
-
-  const renderBookingsForSelectedDate = () => {
-    const bookingsForDate = bookings.filter(
-      booking => moment(booking.date).format('YYYY-MM-DD') === selectedDate
-    );
-
-    return bookingsForDate.map(booking => (
-      <BookingCard key={booking._id} booking={booking} caregiver={caregivers[booking.caregiverId]} />
-    ));
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setShowCalendar(!showCalendar)}>
-        <Text style={styles.toggleButton}>
-          {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
-        </Text>
-      </TouchableOpacity>
-      {showCalendar && (
+      <View style={styles.calendarContainer}>
         <Calendar
-          current={selectedDate}
-          minDate={moment().format('YYYY-MM-DD')}
-          maxDate={moment().add(3, 'months').format('YYYY-MM-DD')}
-          onDayPress={(day: { dateString: string }) => handleDateSelected(day.dateString)}
+          current={selectedDate || undefined}
+          minDate={'2024-01-01'}
+          maxDate={'2025-12-31'}
+          onDayPress={(day: DateData) => handleDateSelected(day.dateString)}
           markedDates={getMarkedDates()}
-          markingType={'multi-dot'}
+          markingType={'simple'}
           theme={{
             calendarBackground: '#ffffff',
             textSectionTitleColor: '#4A4A4A',
@@ -115,12 +66,14 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
           }}
           enableSwipeMonths={true}
         />
-      )}
-      {selectedDate && !showCalendar && (
+      </View>
+      {selectedDate && (
         <View style={styles.bookingsContainer}>
-          <Text style={styles.selectedDate}>{moment(selectedDate).format('MMMM Do, YYYY')}</Text>
-          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            {renderBookingsForSelectedDate()}
+          <Text style={styles.selectedDate}>{selectedDate}</Text>
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+            {filteredBookings.map((booking) => (
+              <BookingCard key={booking._id} booking={booking} caregiver={caregivers[booking.caregiverId]} />
+            ))}
           </ScrollView>
         </View>
       )}
@@ -130,20 +83,24 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 10,
     marginBottom: 20,
   },
-  toggleButton: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Semibold',
-    color: '#295259',
-    textAlign: 'center',
-    marginVertical: 10,
+  calendarContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
   },
   bookingsContainer: {
-    marginTop: 20,
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
   },
   selectedDate: {
     fontSize: 18,
@@ -153,7 +110,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   scrollView: {
-    height: 300, // Adjust height as needed
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 80, // Adjust padding as needed
   },
 });
 

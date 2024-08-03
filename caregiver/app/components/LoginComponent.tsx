@@ -74,7 +74,7 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
       if (axios.isAxiosError(error) && error.response) {
         Alert.alert('Error', `Login failed: ${error.response.data.message}`);
       } else {
-        Alert.alert('Error', 'Login failed. Please try again.');
+        Alert.alert('Error', `Login failed. Please try again. ${error}`);
       }
     }
   };
