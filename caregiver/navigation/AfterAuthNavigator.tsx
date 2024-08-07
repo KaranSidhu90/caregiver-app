@@ -5,7 +5,8 @@ import HomeStackNavigator from "../app/screens/HomeInternal";
 import CaregiverProfile from "../app/screens/CaregiverProfile";
 import BookVisitScreen from "../app/screens/BookVisitScreen";
 import AllCaregivers from "../app/screens/AllCaregivers"; 
-import BookingsScreen from '../app/screens/BookingsScreen'
+import BookingsScreen from '../app/screens/BookingsScreen';
+import BookingAgendaScreen from '../app/screens/BookingAgendaScreen';
 import { createStackNavigator } from "@react-navigation/stack";
 
 const Stack = createStackNavigator();
@@ -40,6 +41,11 @@ const AfterAuthNavigator = () => {
       <Stack.Screen
         name="Bookings" 
         component={BookingsScreen} 
+        options={{ headerBackTitle: "" }}
+      />
+      <Stack.Screen
+        name="Booking Agenda" 
+        component={BookingAgendaScreen} 
         options={{ headerBackTitle: "" }}
       />
     </Stack.Navigator>

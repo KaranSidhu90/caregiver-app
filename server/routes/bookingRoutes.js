@@ -129,7 +129,7 @@ router.post('/', authMiddleware, bookingController.createBooking);
  *         required: false
  *         schema:
  *           type: string
- *           enum: [Pending, Accepted, Cancelled]
+ *           enum: [Pending, Accepted, Cancelled, Completed]
  *         description: The booking status
  *     responses:
  *       200:
@@ -187,7 +187,7 @@ router.get('/caregiver/:caregiverId', authMiddleware, bookingController.getBooki
  *         required: false
  *         schema:
  *           type: string
- *           enum: [Pending, Accepted, Cancelled]
+ *           enum: [Pending, Accepted, Cancelled, Completed]
  *         description: The booking status
  *     responses:
  *       200:
@@ -246,7 +246,7 @@ router.get('/senior/:seniorId', authMiddleware, bookingController.getBookingsByS
  *         required: true
  *         schema:
  *           type: string
- *           enum: [Pending, Accepted, Cancelled]
+ *           enum: [Pending, Accepted, Cancelled, Completed]
  *         description: The new status for the booking
  *     responses:
  *       200:
@@ -316,7 +316,7 @@ router.patch('/changeStatus/:bookingId', authMiddleware, bookingController.chang
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [Pending, Accepted, Cancelled]
+ *                 enum: [Pending, Accepted, Cancelled, Completed]
  *             example:
  *               status: "Accepted"
  *     responses:
@@ -413,7 +413,7 @@ router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
  *         required: true
  *         schema:
  *           type: string
- *           enum: [Pending, Accepted, Cancelled]
+ *           enum: [Pending, Accepted, Cancelled, Completed]
  *         description: The booking status
  *     responses:
  *       200:

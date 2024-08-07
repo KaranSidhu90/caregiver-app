@@ -1,70 +1,130 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
+import BookingDetails from './BookingDetails';
+import { getAvatarUrl } from '../helpers/common';
 
-type BookingCardProps = {
-  booking: {
-    _id: string;
-    slots: {
-      morning: boolean;
-      afternoon: boolean;
-      evening: boolean;
-    };
-    status: string;
-    additionalInfo: string;
-    seniorId: string;
-    caregiverId: string;
-    date: string;
-    location: {
-      latitude: number;
-      longitude: number;
-    };
-  };
-  caregiver: {
-    _id: string;
-    name: string;
-    imageUrl: string;
-  };
+type Props = {
+  booking: any;
+  caregiver: any;
+  onBookingChange: (bookingId: string) => void; // Add this prop
 };
 
-const getSlotText = (slots: { morning: boolean; afternoon: boolean; evening: boolean }) => {
-  if (slots.morning) return 'Morning';
-  if (slots.afternoon) return 'Afternoon';
-  if (slots.evening) return 'Evening';
-  return '';
-};
+const BookingCard: React.FC<Props> = ({ booking, caregiver, onBookingChange }) => {
+  const avatarUrl = getAvatarUrl(caregiver ? caregiver.name : 'Unknown', caregiver?.imageUrl);
 
-const BookingCard: React.FC<BookingCardProps> = ({ booking, caregiver }) => {
-  const avatarUrl = caregiver?.imageUrl
-    ? caregiver.imageUrl
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(caregiver?.name || 'Unknown')}&background=295259&color=fff&size=200&rounded=true`;
+  const isAccepted = booking.status === 'Accepted';
+  const cardStyle = isAccepted ? styles.acceptedCard : styles.pendingCard;
+  const textStyle = isAccepted ? styles.acceptedText : styles.pendingText;
+  const icon = isAccepted ? 'check-circle' : 'hourglass-empty';
+
+  const actionSheetRef = useRef<ActionSheetRef>(null);
+
+  const openActionSheet = () => {
+    if (actionSheetRef.current) {
+      actionSheetRef.current.setModalVisible(true);
+    }
+  };
+
+  const handleCloseActionSheet = () => {
+    if (actionSheetRef.current) {
+      actionSheetRef.current.setModalVisible(false);
+    }
+  };
 
   return (
-    <View style={styles.bookingCard}>
-      <Text>Caregiver: {caregiver?.name || 'Unknown'}</Text>
-      <Text>Slot: {getSlotText(booking.slots)}</Text>
-      <Text>Additional Info: {booking.additionalInfo}</Text>
-      <Image source={{ uri: avatarUrl }} style={styles.caregiverImage} />
-    </View>
+    <>
+      <TouchableOpacity onPress={openActionSheet} style={[styles.card, cardStyle]}>
+        <Image source={{ uri: avatarUrl }} style={styles.caregiverImage} />
+        <View style={styles.info}>
+          <Text style={[styles.caregiverName, textStyle]}>{caregiver ? caregiver.name : 'Unknown Caregiver'}</Text>
+          <Text style={[styles.slot, textStyle]}>{getSlotText(booking.slots)}</Text>
+          <Text style={[styles.slot, textStyle]}>{booking.date.split('T')[0]}</Text>
+          <View style={[styles.chip, isAccepted ? styles.acceptedChip : styles.pendingChip]}>
+            <Icon name={icon} size={14} color={isAccepted ? '#4A4A4A' : '#4A4A4A'} />
+            <Text style={[styles.chipText, textStyle]}>{isAccepted ? 'Accepted' : 'Pending'}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      <ActionSheet ref={actionSheetRef} gestureEnabled={true}>
+        <BookingDetails
+          booking={booking}
+          caregiver={caregiver}
+          onClose={handleCloseActionSheet}
+          onBookingChange={onBookingChange} // Pass the prop
+        />
+      </ActionSheet>
+    </>
   );
 };
 
+const getSlotText = (slots: { morning: boolean; afternoon: boolean; evening: boolean }) => {
+  if (slots.morning) return 'Morning (8AM - 12PM)';
+  if (slots.afternoon) return 'Afternoon (1PM - 5PM)';
+  if (slots.evening) return 'Evening (6PM - 10PM)';
+  return '';
+};
+
 const styles = StyleSheet.create({
-  bookingCard: {
-    marginVertical: 10,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    width: '95%',
+    alignSelf: 'center',
+  },
+  acceptedCard: {
+    backgroundColor: '#9FD4A3',
+  },
+  pendingCard: {
+    backgroundColor: '#C2A27C',
   },
   caregiverImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginTop: 10,
+  },
+  info: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  caregiverName: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Semibold',
+  },
+  slot: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginTop: 5,
+    width: 110,
+  },
+  acceptedChip: {
+    backgroundColor: '#9FD4A3',
+  },
+  pendingChip: {
+    backgroundColor: '#C2A27C',
+  },
+  chipText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    marginLeft: 5,
+  },
+  acceptedText: {
+    color: '#4A4A4A',
+  },
+  pendingText: {
+    color: '#4A4A4A',
   },
 });
 

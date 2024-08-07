@@ -35,6 +35,9 @@ const Sidebar: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Bookings')}>
           <Text style={styles.menuItem}>Bookings</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Booking Agenda')}>
+          <Text style={styles.menuItem}>Booking Agenda</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={[styles.button, styles.signOutButton]} onPress={handleSignOut}>

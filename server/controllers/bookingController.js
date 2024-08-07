@@ -77,7 +77,7 @@ exports.changeBookingStatus = async (req, res, next) => {
     
     
 
-    if (!['Pending', 'Accepted', 'Cancelled'].includes(status)) {
+    if (!['Pending', 'Accepted', 'Cancelled', 'Completed'].includes(status)) {
       
       return res.status(400).json({ message: 'Invalid status' });
     }

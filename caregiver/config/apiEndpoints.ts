@@ -1,8 +1,8 @@
 // config/apiEndpoints.ts
 
 // const BASE_URL = 'http://192.168.40.59:5000'; 
-const BASE_URL = 'http:/172.20.10.3:5000'; 
-// const BASE_URL = 'http://142.3.72.83:5000'; 
+// const BASE_URL = 'http:/10.69.161.218:5000'; 
+const BASE_URL = 'http://172.20.10.5:5000'; 
 
 const API_ENDPOINTS = {
     AUTH: {
@@ -19,6 +19,7 @@ const API_ENDPOINTS = {
         GET_BY_SENIOR_ID: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}`,
         UPDATE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
         DELETE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
+        CHANGE_STATUS: (bookingId: string, status: string) => `${BASE_URL}/bookings/changeStatus/${bookingId}?status=${status}`,
         GET_SLOTS_DAY: (caregiverId: string, date: string) => `${BASE_URL}/bookings/slots/${caregiverId}/${date}`,
         GET_ALL_SLOTS: (caregiverId: string, status: string) => `${BASE_URL}/bookings/caregiver/slots/${caregiverId}/${status}`,
     },
