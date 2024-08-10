@@ -8,6 +8,7 @@ import AllCaregivers from "../app/screens/AllCaregivers";
 import BookingsScreen from '../app/screens/BookingsScreen';
 import BookingAgendaScreen from '../app/screens/BookingAgendaScreen';
 import { createStackNavigator } from "@react-navigation/stack";
+import CaregiverDashboard from "../app/screens/CaregiverDashboard";
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,11 @@ const AfterAuthNavigator = () => {
         name="Booking Agenda" 
         component={BookingAgendaScreen} 
         options={{ headerBackTitle: "" }}
+      />
+      <Stack.Screen
+        name="Caregiver Dashboard"
+        component={CaregiverDashboard}
+        options={{ headerBackTitle: "", headerShown: false }}
       />
     </Stack.Navigator>
   );

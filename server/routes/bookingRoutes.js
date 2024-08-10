@@ -462,6 +462,44 @@ router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
 router.get('/caregiver/slots/:caregiverId/:status', authMiddleware, bookingController.getBookingSlotsByCaregiverId);
 
 
+/**
+ * @swagger
+ * /bookings/senior/{seniorId}/remaining-trial-visits:
+ *   get:
+ *     summary: Get the remaining trial visits for a senior
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: seniorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The senior ID
+ *     responses:
+ *       200:
+ *         description: The number of remaining trial visits
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 remainingVisits:
+ *                   type: number
+ *                   description: Number of remaining trial visits
+ *               example:
+ *                 remainingVisits: 5
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Internal server error"
+ */
+router.get('/senior/:seniorId/remaining-trial-visits', authMiddleware, bookingController.getRemainingTrialVisits);
+
+
 
 
 module.exports = router;

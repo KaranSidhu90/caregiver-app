@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
@@ -8,18 +8,73 @@ import { getAvatarUrl } from '../helpers/common';
 type Props = {
   booking: any;
   caregiver: any;
-  onBookingChange: (bookingId: string) => void; // Add this prop
+  onBookingChange: (bookingId: string) => void;
 };
 
 const BookingCard: React.FC<Props> = ({ booking, caregiver, onBookingChange }) => {
-  const avatarUrl = getAvatarUrl(caregiver ? caregiver.name : 'Unknown', caregiver?.imageUrl);
+  const avatarUrl = getAvatarUrl(
+    caregiver ? caregiver.name : 'Unknown',
+    caregiver?.imageUrl,
+    booking.status === 'Completed' || booking.status === 'Cancelled' ? 'ffffff' : '295259',
+    booking.status === 'Completed' ? '295259' : booking.status === 'Cancelled' ? 'F44336' : 'ffffff'
+  );
 
-  const isAccepted = booking.status === 'Accepted';
-  const cardStyle = isAccepted ? styles.acceptedCard : styles.pendingCard;
-  const textStyle = isAccepted ? styles.acceptedText : styles.pendingText;
-  const icon = isAccepted ? 'check-circle' : 'hourglass-empty';
+  const getCardStyle = () => {
+    switch (booking.status) {
+      case 'Accepted':
+        return styles.acceptedCard;
+      case 'Completed':
+        return styles.completedCard;
+      case 'Cancelled':
+        return styles.cancelledCard;
+      default:
+        return styles.pendingCard;
+    }
+  };
 
-  const actionSheetRef = useRef<ActionSheetRef>(null);
+  const getTextStyle = () => {
+    switch (booking.status) {
+      case 'Accepted':
+        return styles.activeText;
+      case 'Completed':
+      case 'Cancelled':
+        return styles.whiteText;
+      default:
+        return styles.pendingText;
+    }
+  };
+
+  const getIcon = () => {
+    switch (booking.status) {
+      case 'Accepted':
+        return 'check-circle';
+      case 'Completed':
+        return 'done';
+      case 'Cancelled':
+        return 'cancel';
+      default:
+        return 'hourglass-empty';
+    }
+  };
+
+  const getIconColor = () => {
+    return booking.status === 'Completed' || booking.status === 'Cancelled' ? '#ffffff' : '#4A4A4A';
+  };
+
+  const getChipStyle = () => {
+    switch (booking.status) {
+      case 'Accepted':
+        return styles.acceptedChip;
+      case 'Completed':
+        return styles.completedChip;
+      case 'Cancelled':
+        return styles.cancelledChip;
+      default:
+        return styles.pendingChip;
+    }
+  };
+
+  const actionSheetRef = React.useRef<ActionSheetRef>(null);
 
   const openActionSheet = () => {
     if (actionSheetRef.current) {
@@ -27,33 +82,26 @@ const BookingCard: React.FC<Props> = ({ booking, caregiver, onBookingChange }) =
     }
   };
 
-  const handleCloseActionSheet = () => {
-    if (actionSheetRef.current) {
-      actionSheetRef.current.setModalVisible(false);
-    }
-  };
-
   return (
     <>
-      <TouchableOpacity onPress={openActionSheet} style={[styles.card, cardStyle]}>
+      <TouchableOpacity onPress={openActionSheet} style={[styles.card, getCardStyle()]}>
         <Image source={{ uri: avatarUrl }} style={styles.caregiverImage} />
         <View style={styles.info}>
-          <Text style={[styles.caregiverName, textStyle]}>{caregiver ? caregiver.name : 'Unknown Caregiver'}</Text>
-          <Text style={[styles.slot, textStyle]}>{getSlotText(booking.slots)}</Text>
-          <Text style={[styles.slot, textStyle]}>{booking.date.split('T')[0]}</Text>
-          <View style={[styles.chip, isAccepted ? styles.acceptedChip : styles.pendingChip]}>
-            <Icon name={icon} size={14} color={isAccepted ? '#4A4A4A' : '#4A4A4A'} />
-            <Text style={[styles.chipText, textStyle]}>{isAccepted ? 'Accepted' : 'Pending'}</Text>
+          <Text style={[styles.caregiverName, getTextStyle()]}>{caregiver ? caregiver.name : 'Unknown Caregiver'}</Text>
+          <Text style={[styles.slot, getTextStyle()]}>{getSlotText(booking.slots)}</Text>
+          <View style={[styles.chip, getChipStyle()]}>
+            <Icon name={getIcon()} size={18} color={getIconColor()} />
+            <Text style={[styles.chipText, getTextStyle()]}>{booking.status}</Text>
           </View>
         </View>
       </TouchableOpacity>
 
-      <ActionSheet ref={actionSheetRef} gestureEnabled={true}>
+      <ActionSheet ref={actionSheetRef}>
         <BookingDetails
           booking={booking}
           caregiver={caregiver}
-          onClose={handleCloseActionSheet}
-          onBookingChange={onBookingChange} // Pass the prop
+          onClose={() => actionSheetRef.current?.setModalVisible(false)}
+          onBookingChange={onBookingChange}
         />
       </ActionSheet>
     </>
@@ -80,12 +128,18 @@ const styles = StyleSheet.create({
   acceptedCard: {
     backgroundColor: '#9FD4A3',
   },
+  completedCard: {
+    backgroundColor: '#295259',
+  },
+  cancelledCard: {
+    backgroundColor: '#F44336',
+  },
   pendingCard: {
     backgroundColor: '#C2A27C',
   },
   caregiverImage: {
-    width: 50,
-    height: 50,
+    width: 80,
+    height: 80,
     borderRadius: 25,
   },
   info: {
@@ -103,7 +157,6 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
     marginTop: 5,
@@ -111,6 +164,12 @@ const styles = StyleSheet.create({
   },
   acceptedChip: {
     backgroundColor: '#9FD4A3',
+  },
+  completedChip: {
+    backgroundColor: '#295259',
+  },
+  cancelledChip: {
+    backgroundColor: '#F44336',
   },
   pendingChip: {
     backgroundColor: '#C2A27C',
@@ -120,8 +179,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     marginLeft: 5,
   },
-  acceptedText: {
+  activeText: {
     color: '#4A4A4A',
+  },
+  whiteText: {
+    color: '#ffffff',
   },
   pendingText: {
     color: '#4A4A4A',

@@ -20,6 +20,10 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsFetched, setReviewsFetched] = useState(false);
   const caregiverId = caregiverData?._id;
+  const tabs = [
+    { label: "Skills", value: "Skills" },
+    { label: "Reviews", value: "Reviews" },
+  ];
 
   useEffect(() => {
     if (caregiverId && !reviewsFetched) {
@@ -101,7 +105,7 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
           activeClients={caregiverData.activeClients}
           totalClients={caregiverData.totalClients}
         />
-        <Tabs activeTab={activeTab} onTabPress={handleTabPress} />
+        <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} />
         {activeTab === 'Skills' ? (
           <Skills skills={caregiverData.skills ?? []} />
         ) : (

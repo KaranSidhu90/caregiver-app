@@ -64,10 +64,9 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
     try {
       const storedUserId = await AsyncStorage.getItem('userId');
       if (storedUserId) {
-        // Fetch trial visits data
-        const trialVisitsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(storedUserId));
-        const bookingsCount = trialVisitsResponse.data.length;
-        const remaining = 7 - bookingsCount;
+        const trialVisitsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_REMAINING_TRIAL_VISITS(storedUserId));
+        const remaining = trialVisitsResponse.data.remainingVisits;
+
         if (remaining > 0) {
           setTrialVisitsRemaining(remaining);
         } else {
@@ -112,7 +111,12 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.trialVisitsCount}>{trialVisitsRemaining}</Text>
             </View>
           )}
-          <Text style={styles.sectionTitle}>Recommended Caregivers</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recommended Caregivers</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('All Caregivers', { caregivers })}>
+              <Text style={styles.seeAllLink}>See All</Text>
+            </TouchableOpacity>
+          </View>
           <ScrollView style={styles.recommendedCaregiversContainer}>
             {caregivers.slice(0, 5).map((caregiver, index) => (
               <TouchableOpacity key={index} onPress={() => handleCaregiverPress(caregiver)}>
@@ -124,12 +128,6 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableOpacity 
-            style={styles.seeAllButton}
-            onPress={() => navigation.navigate('AllCaregivers', { caregivers })}
-          >
-            <Text style={styles.seeAllButtonText}>See All</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -175,13 +173,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Medium',
     color: '#00796B',
   },
-  recommendedCaregiversContainer: {
-    marginTop: 20,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 18,
     fontFamily: 'Poppins-Semibold',
     color: '#4A4A4A',
+  },
+  seeAllLink: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#00796B',
+    textDecorationLine: 'underline',
+  },
+  recommendedCaregiversContainer: {
+    marginTop: 20,
   },
   seeAllButton: {
     marginTop: 20,

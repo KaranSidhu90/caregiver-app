@@ -1,8 +1,6 @@
-// config/apiEndpoints.ts
-
 // const BASE_URL = 'http://192.168.40.59:5000'; 
-// const BASE_URL = 'http:/10.69.161.218:5000'; 
-const BASE_URL = 'http://172.20.10.5:5000'; 
+const BASE_URL = 'http:/172.16.1.110:5000'; 
+// const BASE_URL = 'http://172.20.10.5:5000'; 
 
 const API_ENDPOINTS = {
     AUTH: {
@@ -17,6 +15,7 @@ const API_ENDPOINTS = {
         CREATE: `${BASE_URL}/bookings`,
         GET_BY_CAREGIVER_ID: (caregiverId: string) => `${BASE_URL}/bookings/caregiver/${caregiverId}`,
         GET_BY_SENIOR_ID: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}`,
+        GET_REMAINING_TRIAL_VISITS: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}/remaining-trial-visits`,
         UPDATE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
         DELETE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,
         CHANGE_STATUS: (bookingId: string, status: string) => `${BASE_URL}/bookings/changeStatus/${bookingId}?status=${status}`,
@@ -26,6 +25,8 @@ const API_ENDPOINTS = {
     REVIEWS: {
         ADD: `${BASE_URL}/reviews`,
         GET_BY_RECEIVER_ID: (receiverId: string) => `${BASE_URL}/reviews/${receiverId}`,
+        GET_BY_BOOKING_AND_RECEIVER_ID: (bookingId: string, receiverId: string) => `${BASE_URL}/reviews/booking/${bookingId}/receiver/${receiverId}`,
+        GET_AVERAGE_RATING: (receiverId: string) => `${BASE_URL}/reviews/average/${receiverId}`,
     },
     USERS: {
         GET_ALL_SENIORS: `${BASE_URL}/api/users/seniors`,

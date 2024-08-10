@@ -4,48 +4,35 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 type Props = {
   activeTab: string;
   onTabPress: (tab: string) => void;
-  tabs: [label: string];
+  tabs: { label: string; value: string }[];
 };
 
-const Tabs: React.FC<Props> = ({ activeTab, onTabPress }) => {
+const Tabs: React.FC<Props> = ({ activeTab, onTabPress, tabs }) => {
   return (
     <View style={styles.tabsContainer}>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === "Skills" ? styles.activeTab : styles.inactiveTab,
-        ]}
-        onPress={() => onTabPress("Skills")}
-      >
-        <Text
-          style={[
-            styles.tabText,
-            activeTab === "Skills"
-              ? styles.activeTabText
-              : styles.inactiveTabText,
-          ]}
-        >
-          Skills
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === "Reviews" ? styles.activeTab : styles.inactiveTab,
-        ]}
-        onPress={() => onTabPress("Reviews")}
-      >
-        <Text
-          style={[
-            styles.tabText,
-            activeTab === "Reviews"
-              ? styles.activeTabText
-              : styles.inactiveTabText,
-          ]}
-        >
-          Reviews
-        </Text>
-      </TouchableOpacity>
+      {tabs?.map((tab, index) => {
+        return (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.tabButton,
+              activeTab === tab.value ? styles.activeTab : styles.inactiveTab,
+            ]}
+            onPress={() => onTabPress(tab.value)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab.value
+                  ? styles.activeTabText
+                  : styles.inactiveTabText,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -54,17 +41,18 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#ffffff",
+    // backgroundColor: "#ffffff",
     padding: 10,
     borderRadius: 10,
     marginVertical: 10,
     marginTop: -20,
+    gap: 8,
   },
   tabButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 35,
-    width: "45%",
+    flex: 1,
     alignItems: "center",
   },
   activeTab: {
@@ -75,7 +63,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: "Poppins-Medium",
-    fontSize: 16,
+    fontSize: 14,
     textAlign: "center",
   },
   activeTabText: {

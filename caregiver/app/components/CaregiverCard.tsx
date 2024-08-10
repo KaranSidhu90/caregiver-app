@@ -3,50 +3,43 @@ import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import axios from 'axios';
 import API_ENDPOINTS from '../../config/apiEndpoints';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { getAvatarUrl } from '../helpers/common';
 
 type Props = {
   caregiver: {
     _id: string;
     name: string;
     experience: string;
-    rating?: number; // Make rating optional
+    rating?: number;
     imageUrl?: string;
   };
   navigation: any;
-  distance?: string; // Add distance as an optional prop
+  distance?: string;
 };
 
 const CaregiverCard: React.FC<Props> = ({ caregiver, navigation, distance }) => {
   const [averageRating, setAverageRating] = useState<string | number | null>(null);
 
-  const avatarUrl = caregiver.imageUrl
-    ? caregiver.imageUrl
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(caregiver.name)}&background=295259&color=fff&size=200&rounded=true`;
+  const avatarUrl = getAvatarUrl(caregiver.name, caregiver.imageUrl);
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchAverageRating = async () => {
       try {
-        const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_BY_RECEIVER_ID(caregiver._id));
-        const reviews = response.data;
+        const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_AVERAGE_RATING(caregiver._id));
+        const { averageRating } = response.data;
 
-        if (reviews.length > 0) {
-          const totalRating = reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
-          const average = totalRating / reviews.length;
-          setAverageRating(parseFloat(average.toFixed(1)));
-        } else {
-          setAverageRating('Not Rated');
-        }
+        setAverageRating(averageRating !== undefined ? parseFloat(averageRating.toFixed(1)) : 'Not Rated');
       } catch (error) {
         if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
-          setAverageRating('Not Rated'); // On 404 error, set rating to "Not Rated"
+          setAverageRating('Not Rated');
         } else {
-          console.error('Error fetching reviews:', error);
+          console.error('Error fetching average rating:', error);
           setAverageRating('Trouble Loading Rating');
         }
       }
     };
 
-    fetchReviews();
+    fetchAverageRating();
   }, [caregiver._id]);
 
   return (

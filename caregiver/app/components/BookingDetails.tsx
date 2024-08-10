@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import { toast } from '@backpackapp-io/react-native-toast';
@@ -12,7 +12,7 @@ type Props = {
   booking: any;
   caregiver: any;
   onClose: () => void;
-  onBookingChange: (bookingId: string) => void; // Add this prop
+  onBookingChange: (bookingId: string) => void;
 };
 
 const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookingChange }) => {
@@ -73,7 +73,7 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
   };
 
   const formatBookingDate = (date: string) => {
-    return format(new Date(date), 'EEEE, do MMMM, yyyy'); // Format date to "Sunday, 11th August, 2024"
+    return format(new Date(date), 'EEEE, do MMMM, yyyy');
   };
 
   return (
@@ -82,8 +82,8 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
         <Icon name="close" size={24} color="#000" />
       </TouchableOpacity>
       <View style={styles.statusContainer}>
-        <View style={[styles.statusChip, booking.status === 'Accepted' ? styles.acceptedChip : styles.pendingChip]}>
-          <Icon name={booking.status === 'Accepted' ? 'check-circle' : 'hourglass-empty'} size={20} color="#fff" />
+        <View style={[styles.statusChip, booking.status === 'Accepted' ? styles.acceptedChip : booking.status === 'Completed' ? styles.completedChip : booking.status === 'Cancelled' ? styles.cancelledChip : styles.pendingChip]}>
+          <Icon name={booking.status === 'Accepted' ? 'check-circle' : booking.status === 'Completed' ? 'done' : booking.status === 'Cancelled' ? 'cancel' : 'hourglass-empty'} size={20} color="#fff" />
           <Text style={styles.statusText}>{booking.status}</Text>
         </View>
       </View>
@@ -91,7 +91,14 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
       <Text style={styles.caregiverName}>{caregiver ? caregiver.name : 'Unknown Caregiver'}</Text>
       <Text style={styles.date}>{formatBookingDate(booking.date)}</Text>
       <Text style={styles.slot}>{getSlotText(booking.slots)}</Text>
-      {distance && <Text style={styles.distance}>Distance: {distance}</Text>}
+      <View style={styles.distanceContainer}>
+        <Text style={styles.distanceLabel}>Distance:</Text>
+        {distance ? (
+          <Text style={styles.distance}>{distance}</Text>
+        ) : (
+          <ActivityIndicator size="small" color="#0000ff" style={styles.loader} />
+        )}
+      </View>
       <Text style={styles.additionalInfoHeader}>Additional Details</Text>
       <Text style={styles.additionalInfo}>{booking.additionalInfo || 'No additional details provided.'}</Text>
       <View style={styles.actions}>
@@ -112,6 +119,20 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
             </TouchableOpacity>
           </>
         )}
+        {booking.status === 'Completed' && (
+          <>
+            <TouchableOpacity style={[styles.button, styles.completeButton]} onPress={onClose}>
+              <Text style={styles.buttonText}>Booking Completed</Text>
+            </TouchableOpacity>
+          </>
+        )}
+        {booking.status === 'Cancelled' && (
+          <>
+            <TouchableOpacity style={[styles.button, styles.cancelledButton]} onPress={onClose}>
+              <Text style={styles.buttonText}>Booking Cancelled</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );
@@ -127,7 +148,7 @@ const getSlotText = (slots: { morning: boolean; afternoon: boolean; evening: boo
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingBottom: 50, 
+    paddingBottom: 50,
   },
   closeButton: {
     position: 'absolute',
@@ -152,6 +173,12 @@ const styles = StyleSheet.create({
   },
   acceptedChip: {
     backgroundColor: '#9FD4A3',
+  },
+  completedChip: {
+    backgroundColor: '#295259',
+  },
+  cancelledChip: {
+    backgroundColor: '#F44336',
   },
   pendingChip: {
     backgroundColor: '#C2A27C',
@@ -187,11 +214,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  distanceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  distanceLabel: {
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    marginRight: 5,
+  },
   distance: {
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
-    marginBottom: 10,
+  },
+  loader: {
+    width: 100,
+    height: 20,
   },
   additionalInfoHeader: {
     fontSize: 16,
@@ -206,7 +246,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'column',
-    marginTop: 'auto', // Align buttons at the bottom
+    marginTop: 'auto',
   },
   button: {
     paddingVertical: 10,
@@ -222,6 +262,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   cancelButton: {
+    backgroundColor: '#F44336',
+  },
+  cancelledButton: {
     backgroundColor: '#F44336',
   },
   buttonText: {

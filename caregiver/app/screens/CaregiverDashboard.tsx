@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import DashboardHeader from "../components/DashboardHeader";
 import { initializeAuthToken } from "../../utils/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Tabs from "../components/Tabs";
+import CaregiverRequests from "../components/CaregiverRequests";
+import CaregiverBookingList from "../components/CaregiverBookingList";
 
 type Props = {
   navigation: any;
@@ -12,6 +15,12 @@ const CaregiverDashboard: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("User"); // Default user name
   const [userId, setUserId] = useState(""); // User ID
+  const tabs = [
+    { label: "Requests", value: "requests" },
+    { label: "Bookings", value: "bookings" },
+    { label: "Calendar", value: "calendar" },
+  ];
+  const [activeTab, setActiveTab] = useState("requests");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +63,13 @@ const CaregiverDashboard: React.FC<Props> = ({ navigation }) => {
 
   const timeOfDayGreeting = getTimeOfDayGreeting();
 
+  const handleTabPress = useCallback(
+    (tab: string) => {
+      setActiveTab(tab);
+    },
+    [activeTab]
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -70,8 +86,13 @@ const CaregiverDashboard: React.FC<Props> = ({ navigation }) => {
         timeOfDay={timeOfDayGreeting}
         navigation={navigation}
       />
+
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.dataContainer}></View>
+        <View style={styles.dataContainer}>
+          <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} />
+          {activeTab === "requests" && <CaregiverRequests />}
+          {activeTab === "bookings" && <CaregiverBookingList />}
+        </View>
       </ScrollView>
     </View>
   );

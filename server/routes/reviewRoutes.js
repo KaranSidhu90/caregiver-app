@@ -12,6 +12,7 @@ const reviewController = require('../controllers/reviewController');
  *       required:
  *         - reviewerId
  *         - receiverId
+ *         - bookingId
  *         - rating
  *         - comment
  *       properties:
@@ -21,6 +22,9 @@ const reviewController = require('../controllers/reviewController');
  *         receiverId:
  *           type: string
  *           description: The ID of the receiver (senior or caregiver)
+ *         bookingId:
+ *           type: string
+ *           description: The ID of the booking associated with the review
  *         rating:
  *           type: number
  *           description: The rating given by the reviewer
@@ -36,6 +40,7 @@ const reviewController = require('../controllers/reviewController');
  *       example:
  *         reviewerId: 66860a2ab778421280d0d8a4
  *         receiverId: 66860a2ab778421280d0d8a5
+ *         bookingId: 66b5310a43cc2082ef8e346a
  *         rating: 5
  *         comment: "Excellent caregiver, highly recommended!"
  */
@@ -111,5 +116,82 @@ router.post('/', authMiddleware, reviewController.addReview);
  *               message: Internal server error
  */
 router.get('/:receiverId', authMiddleware, reviewController.getReviewsByReceiverId);
+
+/**
+ * @swagger
+ * /reviews/average/{receiverId}:
+ *   get:
+ *     summary: Get average rating for a user
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: receiverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user receiving the reviews
+ *     responses:
+ *       200:
+ *         description: Average rating fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 averageRating:
+ *                   type: number
+ *                   description: The average rating
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Internal server error
+ */
+router.get('/average/:receiverId', authMiddleware, reviewController.getAverageRatingByReceiverId);
+
+/**
+ * @swagger
+ * /reviews/booking/{bookingId}/receiver/{receiverId}:
+ *   get:
+ *     summary: Get a review for a specific booking and receiver
+ *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: bookingId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the booking
+ *       - in: path
+ *         name: receiverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user receiving the review
+ *     responses:
+ *       200:
+ *         description: Review fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Review'
+ *       404:
+ *         description: No review found
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Internal server error
+ */
+router.get('/booking/:bookingId/receiver/:receiverId', authMiddleware, reviewController.getReviewByBookingAndReceiver);
+
 
 module.exports = router;

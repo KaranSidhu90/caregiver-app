@@ -216,3 +216,22 @@ exports.getBookingSlotsByCaregiverId = async (req, res, next) => {
     res.status(500).json({ message: 'An unexpected error occurred', error: err.message });
   }
 };
+
+exports.getRemainingTrialVisits = async (req, res, next) => {
+  try {
+    const { seniorId } = req.params;
+
+    // Count the number of bookings with status 'Accepted' or 'Completed'
+    const bookingCount = await Booking.countDocuments({
+      seniorId,
+      status: { $in: ['Accepted', 'Completed'] }
+    });
+
+    const remainingVisits = Math.max(7 - bookingCount, 0);
+
+    res.status(200).json({ remainingVisits });
+  } catch (err) {
+    console.error('Error fetching remaining trial visits:', err);
+    next(err);
+  }
+};
