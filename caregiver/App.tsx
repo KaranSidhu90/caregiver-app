@@ -6,6 +6,7 @@ import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Toasts } from '@backpackapp-io/react-native-toast';
+import { UserProvider } from './app/providers/UserContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -19,14 +20,16 @@ export default function App() {
   });
 
   return (
-    <NavigationContainer>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AuthNavigator />
-          <Toasts />
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
-    </NavigationContainer>
+    <UserProvider>
+      <NavigationContainer>
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AuthNavigator />
+            <Toasts />
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </NavigationContainer>
+    </UserProvider>
   );
 }

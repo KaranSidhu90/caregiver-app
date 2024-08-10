@@ -61,7 +61,7 @@ exports.login = async (req, res, next) => {
       expiresIn: '1h',
     });
     
-    res.json({ token, email: user.email, name: user.name, id: user._id });
+    res.json({ token, email: user.email, name: user.name, id: user._id, userType: user.userType});
   } catch (err) {
     console.error('Error during login:', err);
     next(err); // Forward error to the error handler middleware

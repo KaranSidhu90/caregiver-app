@@ -17,6 +17,7 @@ import API_ENDPOINTS from '../../config/apiEndpoints';
 import axios from 'axios';
 import { setAuthToken } from '../../utils/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUserContext } from '../providers/UserContext';
 
 type Props = {
   navigation: any;
@@ -26,6 +27,7 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
   const [passcode, setPasscode] = useState<string[]>(['', '', '', '']);
   const passcodeRefs = useRef<(TextInput | null)[]>([]);
   const phoneInputRef = useRef<PhoneInput>(null);
+  const { setUserType, setUserName, setUserId } = useUserContext();
 
   const handlePasscodeChange = (index: number, value: string) => {
     const newPasscode = [...passcode];
@@ -53,7 +55,6 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
 
     try {
       await AsyncStorage.clear();
-
       const loginPayload = {
         phoneNumber,
         passcode: passcodeString,
@@ -61,12 +62,29 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
 
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
       if (response.status === 200) {
-        const { token, email, name, id } = response.data;
+        const { token, email, name, id, userType } = response.data;
+
         await setAuthToken(token);
         await AsyncStorage.setItem('userEmail', email);
         await AsyncStorage.setItem('userName', name);
         await AsyncStorage.setItem('userId', id);
-        navigation.navigate('AfterAuth');
+        await AsyncStorage.setItem('userType', userType);
+
+        setUserType(userType);
+        setUserName(name);
+        setUserId(id);
+
+        if (userType === 'Caregiver') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'CaregiverFlow' }],
+          });
+        } else if (userType === 'Senior') {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'AfterAuth' }],
+          });
+        }
       } else {
         Alert.alert('Error', 'Invalid phone number or passcode.');
       }

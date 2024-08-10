@@ -1,16 +1,16 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { signOut } from '../../utils/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = {
-  isVisible: boolean;
-  onClose: () => void;
   navigation: any;
 };
 
-const Sidebar: React.FC<Props> = ({ navigation }) => {
+const CaregiverSidebar: React.FC<Props> = ({ navigation }) => {
   const handleSignOut = async () => {
+    await AsyncStorage.clear();
     await signOut();
     navigation.reset({
       index: 0,
@@ -18,28 +18,17 @@ const Sidebar: React.FC<Props> = ({ navigation }) => {
     });
   };
 
-  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
-
   return (
     <View style={styles.sidebar}>
-      <View style={[styles.header, { paddingTop: 185 }]}>
+      <View  style={[styles.header, { paddingTop: 185 }]}>
         <Text style={styles.menuTitle}>Menu</Text>
         <TouchableOpacity style={styles.closeButton} onPress={() => navigation.closeDrawer()}>
           <Icon name="chevron-left" size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
       <View style={styles.topContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('All Caregivers')}>
-          <Text style={styles.menuItem}>All Caregivers</Text>
-        </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('Bookings')}>
           <Text style={styles.menuItem}>Bookings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Booking Agenda')}>
-          <Text style={styles.menuItem}>Booking Agenda</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate("Caregiver Dashboard")}>
-          <Text style={styles.menuItem}>Caregiver Dashboard (Temp)</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>
@@ -62,7 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#295259',
+    backgroundColor: '#C2A27C',
     paddingVertical: 15,
     paddingHorizontal: 20,
   },
@@ -110,4 +99,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Sidebar;
+export default CaregiverSidebar;
