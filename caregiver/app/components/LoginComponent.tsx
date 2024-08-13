@@ -17,7 +17,7 @@ import API_ENDPOINTS from '../../config/apiEndpoints';
 import axios from 'axios';
 import { setAuthToken } from '../../utils/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useUserContext } from '../providers/UserContext';
+import ButtonWithLoading from './ButtonWithLoading';
 
 type Props = {
   navigation: any;

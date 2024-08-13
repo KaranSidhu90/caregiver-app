@@ -1,12 +1,26 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import CaregiverRegistrationHeader from '../components/CaregiverRegistrationHeader';
+import CaregiverRegisterForm from '../components/CaregiverRegistrationForm';
 
-const CaregiverRegistration = () => {
+type Props = {
+  navigation: any;
+};
+
+const CaregiverRegister: React.FC<Props> = ({ navigation }) => {
   return (
-    <View>
-      <Text>CaregiverRegistration</Text>
+    <View style={styles.container}>
+      {/* <CaregiverRegistrationHeader title="CAREGIVER" subTitle="Registration" step="Step 1 of 5" icon='hand-holding-heart' /> */}
+      <CaregiverRegisterForm navigation={navigation} />
     </View>
-  )
-}
+  );
+};
 
-export default CaregiverRegistration
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+});
+
+export default CaregiverRegister;

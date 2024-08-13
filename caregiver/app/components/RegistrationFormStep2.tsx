@@ -11,25 +11,26 @@ import {
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { saveUserData, getUserData } from '../helpers/storageHelper';
+import { formatZipCode } from '../../utils/formatters';
 
 type Props = {
   navigation: any;
 };
 
-const provinces = [
-  { label: 'AB', value: 'AB' },
-  { label: 'BC', value: 'BC' },
-  { label: 'MB', value: 'MB' },
-  { label: 'NB', value: 'NB' },
-  { label: 'NL', value: 'NL' },
-  { label: 'NS', value: 'NS' },
-  { label: 'NT', value: 'NT' },
-  { label: 'NU', value: 'NU' },
-  { label: 'ON', value: 'ON' },
-  { label: 'PE', value: 'PE' },
-  { label: 'QC', value: 'QC' },
-  { label: 'SK', value: 'SK' },
-  { label: 'YT', value: 'YT' },
+export const provinces = [
+  { label: 'Alberta', value: 'AB' },
+  { label: 'British Columbia', value: 'BC' },
+  { label: 'Manitoba', value: 'MB' },
+  { label: 'New Brunswick', value: 'NB' },
+  { label: 'Newfoundland and Labrador', value: 'NL' },
+  { label: 'Nova Scotia', value: 'NS' },
+  { label: 'Northwest Territories', value: 'NT' },
+  { label: 'Nunavut', value: 'NU' },
+  { label: 'Ontario', value: 'ON' },
+  { label: 'Prince Edward Island', value: 'PE' },
+  { label: 'Quebec', value: 'QC' },
+  { label: 'Saskatchewan', value: 'SK' },
+  { label: 'Yukon', value: 'YT' },
 ];
 
 const RegistrationFormStep2: React.FC<Props> = ({ navigation }) => {
@@ -92,11 +93,7 @@ const RegistrationFormStep2: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleZipCodeChange = (text: string) => {
-    const formattedText = text
-      .replace(/[^A-Za-z0-9]/g, '') 
-      .replace(/(\w{3})(\w{3})/, '$1 $2'); 
-
-    setZipCode(formattedText);
+    setZipCode(formatZipCode(text));  
   };
 
   return (
