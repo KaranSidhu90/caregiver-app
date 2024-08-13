@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { CalendarProvider, ExpandableCalendar, AgendaList } from 'react-native-calendars';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,6 +38,7 @@ const BookingAgendaScreen: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [caregivers, setCaregivers] = useState<{ [key: string]: Caregiver }>({});
   const [markedDates, setMarkedDates] = useState<{ [key: string]: { marked: boolean } }>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -49,43 +50,75 @@ const BookingAgendaScreen: React.FC = () => {
 
         const pendingUrl = API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(seniorId) + '?status=Pending';
         const acceptedUrl = API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(seniorId) + '?status=Accepted';
-        console.log('Hitting URL for pending bookings:', pendingUrl);
-        console.log('Hitting URL for accepted bookings:', acceptedUrl);
 
-        const [pendingResponse, acceptedResponse] = await Promise.all([
-          axios.get(pendingUrl),
-          axios.get(acceptedUrl),
-        ]);
+        console.log('Fetching pending bookings from:', pendingUrl);
+        console.log('Fetching accepted bookings from:', acceptedUrl);
 
-        const allBookings = [...pendingResponse.data, ...acceptedResponse.data];
+        let allBookings: Booking[] = [];
+
+        // Fetch Pending Bookings
+        try {
+          const pendingResponse = await axios.get(pendingUrl);
+          allBookings = [...allBookings, ...pendingResponse.data];
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 409) {
+            console.warn('No pending bookings found.');
+          } else {
+            throw error; // Re-throw unexpected errors
+          }
+        }
+
+        // Fetch Accepted Bookings
+        try {
+          const acceptedResponse = await axios.get(acceptedUrl);
+          allBookings = [...allBookings, ...acceptedResponse.data];
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 409) {
+            console.log('No accepted bookings found.'); 
+          } else {
+            throw error; // Re-throw unexpected errors
+          }
+        }
+
+        if (allBookings.length === 0) {
+          console.log('No bookings found for this user.');
+          setBookings([]);
+          setMarkedDates({});
+          setLoading(false);
+          return;
+        }
+
         setBookings(allBookings);
 
-        const caregiverIds = new Set(allBookings.map((booking: Booking) => booking.caregiverId));
+        const caregiverIds = Array.from(new Set(allBookings.map((booking: Booking) => booking.caregiverId)));
 
-        const caregiverData = await Promise.all(
-          Array.from(caregiverIds).map((id) => {
+        const caregiverMap = await caregiverIds.reduce(async (accPromise, id) => {
+          const acc = await accPromise;
+          try {
             const url = API_ENDPOINTS.USERS.GET_CAREGIVER_BY_ID(id);
-            console.log('Hitting URL for caregiver data:', url);
-            return axios.get(url);
-          })
-        );
-
-        const caregiverMap = caregiverData.reduce((acc, { data }) => {
-          acc[data._id] = data;
+            console.log('Fetching caregiver data from:', url);
+            const { data } = await axios.get(url);
+            acc[data._id] = data;
+          } catch (error) {
+            console.warn('Failed to fetch caregiver data:', error);
+          }
           return acc;
-        }, {} as { [key: string]: Caregiver });
+        }, Promise.resolve({} as { [key: string]: Caregiver }));
 
         setCaregivers(caregiverMap);
 
+        // Mark Dates
         const markedDates = allBookings.reduce((acc, booking) => {
-          const date = booking.date.split('T')[0]; // Extract date part only
+          const date = booking.date.split('T')[0];
           acc[date] = { marked: true };
           return acc;
         }, {} as { [key: string]: { marked: boolean } });
 
         setMarkedDates(markedDates);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching bookings:', error);
+        setLoading(false);
       }
     };
 
@@ -97,10 +130,25 @@ const BookingAgendaScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Booking }) => {
-    return <BookingCard key={item._id} booking={item} caregiver={caregivers[item.caregiverId]} onBookingChange={handleBookingChange} />;
+    return item ? (
+      <BookingCard key={item._id} booking={item} caregiver={caregivers[item.caregiverId]} onBookingChange={handleBookingChange} />
+    ) : (
+      <View style={styles.noBookingContainer}>
+        <Text style={styles.noBookingsText}>No bookings for the day</Text>
+      </View>
+    );
   };
 
   const getSections = () => {
+    if (bookings.length === 0) {
+      return [
+        {
+          title: '',
+          data: [],
+        },
+      ];
+    }
+
     const groupedBookings: GroupedBookings = bookings.reduce((acc: GroupedBookings, booking: Booking) => {
       const date = booking.date.split('T')[0];
       if (!acc[date]) acc[date] = [];
@@ -108,9 +156,11 @@ const BookingAgendaScreen: React.FC = () => {
       return acc;
     }, {});
 
-    return Object.keys(groupedBookings).map((date) => ({
+    const allDates = Object.keys(markedDates);
+
+    return allDates.map((date) => ({
       title: date,
-      data: groupedBookings[date],
+      data: groupedBookings[date] || [null],
     }));
   };
 
@@ -139,12 +189,19 @@ const BookingAgendaScreen: React.FC = () => {
           textDayHeaderFontFamily: 'Poppins-Semibold',
         }}
       />
-      <AgendaList
-        sections={getSections()}
-        renderItem={renderItem}
-        scrollToNextEvent
-        sectionStyle={styles.section}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text>Loading...</Text>
+        </View>
+      ) : (
+        <AgendaList
+          sections={getSections()}
+          renderItem={renderItem}
+          scrollToNextEvent
+          sectionStyle={styles.section}
+          ListEmptyComponent={<Text style={styles.noBookingsText}>No Bookings Available</Text>}
+        />
+      )}
     </CalendarProvider>
   );
 };
@@ -159,5 +216,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 15,
     fontSize: 18,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noBookingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noBookingsText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
 });

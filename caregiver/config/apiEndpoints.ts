@@ -1,5 +1,5 @@
-const BASE_URL = 'http://192.168.40.59:5000'; 
-// const BASE_URL = 'http:/172.16.1.110:5000'; 
+// const BASE_URL = 'http://192.168.40.59:5000'; 
+const BASE_URL = 'http:/10.69.161.218:5000'; 
 // const BASE_URL = 'http://172.20.10.5:5000'; 
 
 const API_ENDPOINTS = {
@@ -14,6 +14,7 @@ const API_ENDPOINTS = {
     BOOKINGS: {
         CREATE: `${BASE_URL}/bookings`,
         GET_BY_CAREGIVER_ID: (caregiverId: string) => `${BASE_URL}/bookings/caregiver/${caregiverId}`,
+        GET_BY_CAREGIVER_ID_DETAILS: (caregiverId: string) => `${BASE_URL}/bookings/caregiver/${caregiverId}/details`,
         GET_BY_SENIOR_ID: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}`,
         GET_REMAINING_TRIAL_VISITS: (seniorId: string) => `${BASE_URL}/bookings/senior/${seniorId}/remaining-trial-visits`,
         UPDATE: (bookingId: string) => `${BASE_URL}/bookings/${bookingId}`,

@@ -89,7 +89,7 @@ const CaregiverDashboard: React.FC<Props> = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.dataContainer}>
-          <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} />
+          <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} isWide={true} fontSize={15} />
           {activeTab === "requests" && <CaregiverRequests />}
           {activeTab === "bookings" && <CaregiverBookingList />}
         </View>
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
+    width: "100%",
   },
   scrollViewContent: {
     height: "100%",
@@ -112,7 +113,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#787878",
     position: "absolute",
     borderRadius: 20,
-    padding: 20,
+    paddingVertical: 25,
+    paddingHorizontal:5 ,
     zIndex: 999,
     height: "120%",
     width: "100%",

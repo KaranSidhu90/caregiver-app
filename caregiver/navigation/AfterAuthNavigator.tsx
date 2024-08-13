@@ -1,6 +1,4 @@
-// AfterAuthNavigator.tsx
 import React from "react";
-import CaregiverRegistration from "../app/screens/CaregiverRegistration";
 import HomeStackNavigator from "../app/screens/HomeInternal";
 import CaregiverProfile from "../app/screens/CaregiverProfile";
 import BookVisitScreen from "../app/screens/BookVisitScreen";
@@ -8,7 +6,9 @@ import AllCaregivers from "../app/screens/AllCaregivers";
 import BookingsScreen from '../app/screens/BookingsScreen';
 import BookingAgendaScreen from '../app/screens/BookingAgendaScreen';
 import { createStackNavigator } from "@react-navigation/stack";
-import CaregiverDashboard from "../app/screens/CaregiverDashboard";
+import CaregiverRegister from "../app/screens/CaregiverRegistration";
+import RatingScreen from '../app/screens/RatingScreen';
+import StatusScreen from "../app/screens/StatusScreen";
 
 const Stack = createStackNavigator();
 
@@ -20,9 +20,11 @@ const AfterAuthNavigator = () => {
         component={HomeStackNavigator}
         options={{ headerShown: false }}
       />
+      <Stack.Screen name="StatusScreen" component={StatusScreen} />
+
       <Stack.Screen
         name="CaregiverRegister"
-        component={CaregiverRegistration}
+        component={CaregiverRegister}
       />
       <Stack.Screen
         name="Profile"
@@ -50,9 +52,9 @@ const AfterAuthNavigator = () => {
         options={{ headerBackTitle: "" }}
       />
       <Stack.Screen
-        name="Caregiver Dashboard"
-        component={CaregiverDashboard}
-        options={{ headerBackTitle: "", headerShown: false }}
+        name="RatingScreen"
+        component={RatingScreen}
+        options={{ headerBackTitle: "" }}
       />
     </Stack.Navigator>
   );

@@ -5,11 +5,13 @@ type Props = {
   activeTab: string;
   onTabPress: (tab: string) => void;
   tabs: { label: string; value: string }[];
+  isWide?: boolean;  
+  fontSize?: number;
 };
 
-const Tabs: React.FC<Props> = ({ activeTab, onTabPress, tabs }) => {
+const Tabs: React.FC<Props> = ({ activeTab, onTabPress, tabs, isWide = false, fontSize = 14 }) => {
   return (
-    <View style={styles.tabsContainer}>
+    <View style={[styles.tabsContainer, isWide && styles.wideContainer]}>
       {tabs?.map((tab, index) => {
         return (
           <TouchableOpacity
@@ -23,6 +25,7 @@ const Tabs: React.FC<Props> = ({ activeTab, onTabPress, tabs }) => {
             <Text
               style={[
                 styles.tabText,
+                { fontSize }, // Apply custom font size, default to 14
                 activeTab === tab.value
                   ? styles.activeTabText
                   : styles.inactiveTabText,
@@ -41,12 +44,14 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    // backgroundColor: "#ffffff",
     padding: 10,
     borderRadius: 10,
     marginVertical: 10,
     marginTop: -20,
     gap: 8,
+  },
+  wideContainer: {
+    marginHorizontal: 0, // Remove margins on the far corners for wide mode
   },
   tabButton: {
     paddingVertical: 10,
@@ -63,8 +68,8 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: "Poppins-Medium",
-    fontSize: 14,
     textAlign: "center",
+    fontSize: 14, // Default font size
   },
   activeTabText: {
     color: "#fff",

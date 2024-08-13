@@ -31,36 +31,53 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
           Alert.alert('Error', 'Caregiver ID is missing.');
           return;
         }
-
+  
+        // Fetch caregiver availability
         const availabilityResponse = await axios.get(API_ENDPOINTS.AVAILABILITY.GET_BY_CAREGIVER_ID(caregiver._id));
         const availability = availabilityResponse.data.availability;
-
+  
+        // Extract the available days
         const days = availability.map((item: any) => item.day);
         setAvailableDays(days);
-
+  
+        // Find and set the closest available date
         const closestAvailableDate = findClosestAvailableDate(days);
         setSelectedDate(closestAvailableDate);
-
+  
+        // Fetch existing bookings for the caregiver
         const bookingsResponse = await axios.get(API_ENDPOINTS.BOOKINGS.GET_ALL_SLOTS(caregiver._id, 'Accepted'));
         const bookings = bookingsResponse.data;
-        const slots = bookings.reduce((acc: any, booking: any) => {
-          acc[booking.date] = {
-            morning: booking.morning,
-            afternoon: booking.afternoon,
-            evening: booking.evening,
-            isFullyBooked: booking.isFullyBooked,
-          };
-          return acc;
-        }, {});
-        setBookedSlots(slots);
+  
+        // Handle the case where bookings might be empty
+        if (bookings.length === 0) {
+          console.log('No bookings found for caregiver.');
+        } else {
+          const slots = bookings.reduce((acc: any, booking: any) => {
+            acc[booking.date] = {
+              morning: booking.morning,
+              afternoon: booking.afternoon,
+              evening: booking.evening,
+              isFullyBooked: booking.isFullyBooked,
+            };
+            return acc;
+          }, {});
+          setBookedSlots(slots);
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        Alert.alert('Error', 'There was an error fetching data. Please try again.');
+        if (axios.isAxiosError(error) && error.response?.status === 409) {
+          setBookedSlots({}); 
+        } else {
+          console.error('Error fetching data:', error);
+          Alert.alert('Error', 'There was an error fetching data. Please try again.');
+        }
       }
     };
-
+  
     fetchAvailabilityAndBookings();
   }, [caregiver]);
+  
+  
+  
 
   const findClosestAvailableDate = (availableDays: string[]) => {
     const today = new Date();
@@ -131,11 +148,7 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
         status: 'Pending',
       };
 
-      
-
-      // Send the booking data to the CREATE endpoint
       await axios.post(API_ENDPOINTS.BOOKINGS.CREATE, bookingData);
-
       navigation.navigate('StatusScreen', {
         status: 'success',
         title: 'Booking successful!',

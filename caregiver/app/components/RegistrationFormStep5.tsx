@@ -25,15 +25,17 @@ type Props = {
 };
 
 const careTypes = [
-  { label: "Personal Care", value: "personal_care", icon: "user" },
-  { label: "Medical Care", value: "medkit", icon: "medkit" },
+  { label: "Personal Care", value: "personalCare", icon: "user" },
+  { label: "Medical Care", value: "medicalCare", icon: "medkit" },
   {
     label: "Companionship & Social",
-    value: "companionship_social",
+    value: "companionship",
     icon: "users",
   },
-  { label: "Household Help", value: "home", icon: "home" },
+  { label: "Household Help", value: "householdHelp", icon: "home" },
 ];
+
+
 
 const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
   const [selectedCareType, setSelectedCareType] = useState<string | null>(null);
@@ -65,6 +67,7 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
 
     const userData = {
       careType: selectedCareType,
+      userType: "Senior",
       passcode: passcode.join(""),
       registrationComplete: true,
     };
@@ -73,22 +76,38 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
 
     handleRegister();
   };
-
+  
   const handleRegister = async () => {
     try {
-      const UserDataPayload = await getUserData();
-      console.log(UserDataPayload);
-
+      let UserDataPayload = await getUserData();
+      console.log("Original UserDataPayload:", UserDataPayload);
+  
+      const careNeeds = careTypes.reduce((acc, care) => {
+        acc[care.value] = care.value === UserDataPayload.careType;
+        return acc;
+      }, {} as { [key: string]: boolean });
+  
+      UserDataPayload = {
+        ...UserDataPayload,
+        dob: UserDataPayload.dateOfBirth,
+        phoneNumber: UserDataPayload.phoneNumber.replace(/[^\d+]/g, ""),
+        ailmentCategories: UserDataPayload.healthCategories,
+        ailments: UserDataPayload.healthConditions,
+        careNeeds: UserDataPayload.careType, 
+      };
+      delete UserDataPayload.dateOfBirth; 
+  
+      console.log("Modified UserDataPayload:", UserDataPayload);
+  
       const response = await axios.post(
         API_ENDPOINTS.AUTH.REGISTER,
         UserDataPayload
       );
       console.log(response);
-
-      if (response.status === 200) {
+  
+      if (response.status === 201) {
         const { token, email, name, id } = response.data;
         await setAuthToken(token);
-        await AsyncStorage.setItem("userEmail", email);
         await AsyncStorage.setItem("userName", name);
         await AsyncStorage.setItem("userId", id);
         navigation.navigate("StatusScreen", {
@@ -114,6 +133,9 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
       }
     }
   };
+  
+  
+  
 
   const handlePasscodeChange = (index: number, value: string) => {
     const newPasscode = [...passcode];

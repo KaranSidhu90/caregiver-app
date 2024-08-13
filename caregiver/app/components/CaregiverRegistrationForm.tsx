@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -13,11 +13,6 @@ import PhoneInput from "react-native-phone-input";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import moment from "moment";
-import {
-  saveUserData,
-  getUserData,
-  clearUserData,
-} from "../helpers/storageHelper";
 import RNPickerSelect from "react-native-picker-select";
 import { provinces } from "./RegistrationFormStep2";
 import { formatZipCode } from "../../utils/formatters";
@@ -26,6 +21,7 @@ import FormSeparator from "./FormSeparator";
 import axios from "axios";
 import API_ENDPOINTS from "../../config/apiEndpoints";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUserContext } from '../providers/UserContext'; // Import UserContext
 
 type Props = {
   navigation: any;
@@ -37,7 +33,7 @@ type RegisterFormData = {
   password: string;
   phoneNumber: string;
   gender: string;
-  dateOfBirth: Date;
+  dob: Date;
   addressLine1: string;
   addressLine2: string;
   city: string;
@@ -62,36 +58,17 @@ const caregiverCategories = [
   { label: "Dementia Care", value: "Dementia Care" },
 ];
 
-// a mock user data object
-const userData: RegisterFormData = {
-  name: "John Doe",
-  email: "johndoe@example.com",
-  password: "password123",
-  phoneNumber: "+1 306-891-6969",
-  gender: "Male",
-  dateOfBirth: new Date(),
-  addressLine1: "123 Main St",
-  addressLine2: "Apt 4B",
-  city: "Toronto",
-  state: "ON",
-  zipCode: "A1B 2C3",
-  imageUrl: "https://example.com/profile.jpg",
-  userType: "Caregiver",
-  experience: '5',
-  activeClients: '3',
-  totalClients: '10',
-  skills: ["First Aid", "CPR"],
-  category: "Elderly Care",
-  passCode: "1234",
-};
-
 const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
   const [formData, setFormData] = useState<Partial<RegisterFormData>>({});
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // For handling loading state
+  const { setUserType, setUserName, setUserId } = useUserContext(); // Use UserContext
+  
   const {
     name,
     phoneNumber,
-    dateOfBirth,
+    email,
+    dob,
     gender,
     addressLine1,
     addressLine2,
@@ -106,9 +83,29 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
     passCode,
   } = formData;
 
-  // fill the form with mock user data
+  // Fill the form with mock user data (you can remove this in production)
   useEffect(() => {
-    setFormData(userData);
+    setFormData({
+      name: "John Doe",
+      email: "johndoe@example.com",
+      password: "password123",
+      phoneNumber: "+1 306-891-6969",
+      gender: "Male",
+      dob: new Date(),
+      addressLine1: "123 Main St",
+      addressLine2: "Apt 4B",
+      city: "Toronto",
+      state: "ON",
+      zipCode: "A1B 2C3",
+      imageUrl: "https://example.com/profile.jpg",
+      userType: "Caregiver",
+      experience: "5",
+      activeClients: "3",
+      totalClients: "10",
+      skills: ["First Aid", "CPR"],
+      category: "Elderly Care",
+      passCode: "1234",
+    });
   }, []);
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -127,7 +124,8 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
     const requiredFields = [
       "name",
       "phoneNumber",
-      "dateOfBirth",
+      "email",
+      "dob",
       "gender",
       "addressLine1",
       "city",
@@ -145,10 +143,7 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
     );
 
     if (missingFields.length) {
-      Alert.alert(
-        "Missing Fields",
-        "Please fill in all required fields",
-      );
+      Alert.alert("Missing Fields", "Please fill in all required fields");
       return false;
     }
 
@@ -156,31 +151,43 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
   }, [formData]);
 
   const submitForm = useCallback(async () => {
-    if ( true) { 
+    if (!validateFormData()) {
+      return;
+    }
 
-      try {
+    try {
+      setIsSubmitting(true); // Start loading
 
-        const repeatData = await axios.post(API_ENDPOINTS.AUTH.REGISTER, formData);
-        console.log(repeatData);
-  
-        if (repeatData.status === 200) {
-          const { token, email, name, id } = repeatData.data;
-          await setAuthToken(token);
-          await AsyncStorage.setItem('userEmail', email);
-          await AsyncStorage.setItem('userName', name);
-          await AsyncStorage.setItem('userId', id);
-          navigation.navigate('AfterAuth');
-        } else {
-          Alert.alert('Error', 'Invalid phone number or passcode.');
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-          console.log(error);
-          Alert.alert('Error', `Login failed: ${error.response.data.message}`);
-        } else {
-          Alert.alert('Error', 'Login failed. Please try again.');
-        }
+      const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, formData);
+
+      if (response.status === 201) {
+        const { token, email, name, id, userType } = response.data;
+
+        await setAuthToken(token);
+        await AsyncStorage.setItem("userEmail", email);
+        await AsyncStorage.setItem("userName", name);
+        await AsyncStorage.setItem("userId", id);
+        await AsyncStorage.setItem("userType", userType);
+
+        // Update UserContext
+        setUserType(userType);
+        setUserName(name);
+        setUserId(id);
+
+        navigation.navigate("CaregiverFlow");
+      } else {
+        Alert.alert("Error", "Registration failed. Please try again.");
       }
+    } catch (error) {
+      console.log("Error during API call:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.log("API Error Response:", error.response.data);
+        Alert.alert("Error", `Registration failed: ${error.response.data.message}`);
+      } else {
+        Alert.alert("Error", "Registration failed. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false); // Stop loading
     }
   }, [formData, validateFormData, navigation]);
 
@@ -202,7 +209,21 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>
-              Phone Number?<Text style={styles.required}> *</Text> {phoneNumber}
+              Email?<Text style={styles.required}> *</Text>
+            </Text>
+            <TextInput
+              placeholder="Enter your email"
+              value={email}
+              style={styles.input}
+              onChangeText={(text) => updateFormData("email", text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              Phone Number?<Text style={styles.required}> *</Text>
             </Text>
             <PhoneInput
               initialCountry="ca"
@@ -232,9 +253,7 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
               <View style={styles.inputContainer}>
                 <TextInput
                   placeholder="Enter your date of birth"
-                  value={
-                    dateOfBirth ? moment(dateOfBirth).format("MMM DD YYYY") : ""
-                  }
+                  value={dob ? moment(dob).format("MMM DD YYYY") : ""}
                   style={styles.dateInput}
                   editable={false}
                 />
@@ -245,10 +264,10 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
               isVisible={isDatePickerVisible}
               mode="date"
               display="spinner"
-              date={dateOfBirth || new Date()}
+              date={dob || new Date()}
               textColor="#295259"
               onConfirm={(date) => {
-                updateFormData("dateOfBirth", date);
+                updateFormData("dob", date);
                 setDatePickerVisibility(false);
               }}
               onCancel={() => setDatePickerVisibility(false)}
@@ -420,7 +439,6 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
               secureTextEntry
             />
           </View>
-
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity

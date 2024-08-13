@@ -1,4 +1,5 @@
 const Booking = require('../models/Booking');
+const User = require('../models/User');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 const { createBookingNotification, updateBookingNotification, deleteBookingNotification } = require('../middleware/notificationMiddleware');
@@ -37,10 +38,13 @@ exports.getBookingsByCaregiverId = async (req, res, next) => {
     const { caregiverId } = req.params;
     const { status = "Accepted" } = req.query; 
 
-    const bookings = await Booking.find({ caregiverId, status });
+    if (!ObjectId.isValid(caregiverId)) {
+      return res.status(400).json({ message: 'Invalid caregiver ID' });
+    }
 
+    const bookings = await Booking.find({ caregiverId, status });
     if (!bookings.length) {
-      return res.status(404).json({ message: 'No bookings found for this caregiver' });
+      return res.status(409).json({ message: `No ${status} bookings found for this caregiver` });
     }
 
     res.status(200).json(bookings);
@@ -54,10 +58,14 @@ exports.getBookingsBySeniorId = async (req, res, next) => {
     const { seniorId } = req.params;
     const { status = "Accepted" } = req.query; 
 
+    if (!ObjectId.isValid(seniorId)) {
+      return res.status(400).json({ message: 'Invalid senior ID' });
+    }
+
     const bookings = await Booking.find({ seniorId, status });
 
     if (!bookings.length) {
-      return res.status(200).json([]); 
+      return res.status(409).json({ message: 'No bookings found for this senior' });
     }
 
     res.status(200).json(bookings);
@@ -67,19 +75,17 @@ exports.getBookingsBySeniorId = async (req, res, next) => {
   }
 };
 
-
 exports.changeBookingStatus = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
     const { status } = req.query;
 
-    
-    
-    
-
     if (!['Pending', 'Accepted', 'Cancelled', 'Completed'].includes(status)) {
-      
       return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    if (!ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ message: 'Invalid booking ID' });
     }
 
     const booking = await Booking.findByIdAndUpdate(
@@ -89,11 +95,17 @@ exports.changeBookingStatus = async (req, res, next) => {
     );
 
     if (!booking) {
-      
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(409).json({ message: 'Booking not found' });
     }
 
-    
+    req.notificationData = {
+      userId: booking.caregiverId,
+      bookingId: booking._id,
+      message: `Booking status changed to ${status}`,
+      type: 'update'
+    };
+    await updateBookingNotification(req, res, next);
+
     res.status(200).json(booking);
   } catch (err) {
     console.error('Error updating booking status:', err);
@@ -101,20 +113,21 @@ exports.changeBookingStatus = async (req, res, next) => {
   }
 };
 
-
-
 exports.updateBookingStatus = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
     const { status } = req.body;
 
+    if (!ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ message: 'Invalid booking ID' });
+    }
+
     const booking = await Booking.findByIdAndUpdate(bookingId, { status }, { new: true });
 
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(409).json({ message: 'Booking not found' });
     }
 
-    // Determine the user to notify based on who made the change
     const userToNotify = req.user.id === booking.seniorId.toString() ? booking.caregiverId : booking.seniorId;
 
     req.notificationData = {
@@ -135,10 +148,14 @@ exports.deleteBooking = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
 
+    if (!ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ message: 'Invalid booking ID' });
+    }
+
     const booking = await Booking.findByIdAndDelete(bookingId);
 
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(409).json({ message: 'Booking not found' });
     }
 
     req.notificationData = {
@@ -155,36 +172,24 @@ exports.deleteBooking = async (req, res, next) => {
   }
 };
 
-
 exports.getBookingSlotsByCaregiverId = async (req, res, next) => {
   try {
     const { caregiverId, status } = req.params;
 
-    
-    
-
     if (!ObjectId.isValid(caregiverId)) {
-      
       return res.status(400).json({ message: 'Invalid caregiver ID' });
     }
 
-    const cgId = new ObjectId(caregiverId);
-    
-
-    const query = { caregiverId: cgId };
+    const query = { caregiverId: new ObjectId(caregiverId) };
 
     if (status) {
       query.status = status;
     }
 
-    
-
     const bookings = await Booking.find(query);
-    
 
     if (!bookings.length) {
-      
-      return res.status(200).json([]); // Return an empty array if no bookings are found
+      return res.status(409).json({ message: 'No bookings found for this caregiver' });
     }
 
     const slotsByDate = {};
@@ -217,11 +222,76 @@ exports.getBookingSlotsByCaregiverId = async (req, res, next) => {
   }
 };
 
+exports.getBookingBasicDetailsByCaregiverId = async (req, res, next) => {
+  try {
+    const { caregiverId } = req.params;
+    const { status = "Pending" } = req.query;
+
+    if (!ObjectId.isValid(caregiverId)) {
+      return res.status(400).json({ message: 'Invalid caregiver ID' });
+    }
+
+    const bookings = await Booking.find({ caregiverId, status });
+
+    if (!bookings.length) {
+      return res.status(409).json({ message: `No ${status} bookings found for this caregiver` });
+    }
+
+    const detailedBookings = await Promise.all(
+      bookings.map(async (booking) => {
+        const senior = await User.Senior.findById(booking.seniorId, {
+          name: 1,
+          phoneNumber: 1,
+          gender: 1,
+          careNeeds: 1,
+          ailmentCategories: 1,
+          ailments: 1,
+          imageUrl: 1,
+          addressLine1: 1,
+          addressLine2: 1,
+          city: 1,
+          state: 1,
+          zipCode: 1,
+          dob:1
+        });
+
+        if (senior) {
+          // Filter careNeeds to include only true values
+          const careNeeds = Object.keys(senior.careNeeds || {}).filter(
+            (key) => senior.careNeeds[key]
+          );
+
+          return {
+            ...booking.toObject(),
+            seniorDetails: {
+              ...senior.toObject(),
+              careNeeds,
+            },
+          };
+        }
+        return {
+          ...booking.toObject(),
+          seniorDetails: null,
+        };
+      })
+    );
+
+    res.status(200).json(detailedBookings);
+  } catch (err) {
+    console.error('Error fetching booking details:', err);
+    next(err);
+  }
+};
+
+
 exports.getRemainingTrialVisits = async (req, res, next) => {
   try {
     const { seniorId } = req.params;
 
-    // Count the number of bookings with status 'Accepted' or 'Completed'
+    if (!ObjectId.isValid(seniorId)) {
+      return res.status(400).json({ message: 'Invalid senior ID' });
+    }
+
     const bookingCount = await Booking.countDocuments({
       seniorId,
       status: { $in: ['Accepted', 'Completed'] }

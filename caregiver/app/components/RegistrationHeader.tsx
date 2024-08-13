@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 
 type Props = {
   title: string;
-  step: string;
+  step?: string;
   icon: string;
 };
 

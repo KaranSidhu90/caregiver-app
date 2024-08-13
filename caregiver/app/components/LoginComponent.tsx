@@ -18,6 +18,8 @@ import axios from 'axios';
 import { setAuthToken } from '../../utils/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ButtonWithLoading from './ButtonWithLoading';
+import { useUserContext } from '../providers/UserContext';
+import { toast } from '@backpackapp-io/react-native-toast'; 
 
 type Props = {
   navigation: any;
@@ -27,6 +29,7 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
   const [passcode, setPasscode] = useState<string[]>(['', '', '', '']);
   const passcodeRefs = useRef<(TextInput | null)[]>([]);
   const phoneInputRef = useRef<PhoneInput>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { setUserType, setUserName, setUserId } = useUserContext();
 
   const handlePasscodeChange = (index: number, value: string) => {
@@ -44,14 +47,30 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const clearUserData = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      
+      if (userId) {
+        await AsyncStorage.removeItem(userId);
+        await AsyncStorage.removeItem('userId');
+      }
+    } catch (error) {
+      console.error('Error clearing user data:', error);
+    }
+  };
   const handleLogin = async () => {
+    clearUserData();
     const phoneNumber = phoneInputRef.current?.getValue() || '';
     const passcodeString = passcode.join('');
 
-    if (!phoneInputRef.current?.isValidNumber()) {
-      Alert.alert('Error', 'Invalid phone number.');
-      return;
-    }
+    console.log('Phone Number:', phoneNumber);  // Log the phone number
+    console.log('Passcode:', passcodeString);   // Log the passcode
+
+    // if (!phoneInputRef.current?.isValidNumber()) {
+    //   Alert.alert('Error', 'Invalid phone number.');
+    //   return;
+    // }
 
     try {
       await AsyncStorage.clear();
@@ -59,13 +78,18 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
         phoneNumber,
         passcode: passcodeString,
       };
+      
+      console.log('Login Payload:', loginPayload); // Log the payload being sent
 
+      setIsLoggingIn(true);
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
+      
+      console.log('Login Response:', response.data); // Log the response data
+
       if (response.status === 200) {
-        const { token, email, name, id, userType } = response.data;
+        const { token, name, id, userType } = response.data;
 
         await setAuthToken(token);
-        await AsyncStorage.setItem('userEmail', email);
         await AsyncStorage.setItem('userName', name);
         await AsyncStorage.setItem('userId', id);
         await AsyncStorage.setItem('userType', userType);
@@ -86,16 +110,19 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
           });
         }
       } else {
-        Alert.alert('Error', 'Invalid phone number or passcode.');
+        toast.error('Error: Invalid phone number or passcode.');
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        Alert.alert('Error', `Login failed: ${error.response.data.message}`);
+        toast.error(`Error: ${error.response.data.message}`);
       } else {
-        Alert.alert('Error', `Login failed. Please try again. ${error}`);
+        toast.error(`Error: Login failed. Please try again`);
       }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -140,9 +167,9 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
                 ))}
               </View>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
+            <ButtonWithLoading loading={isLoggingIn} style={styles.button} textStyle={styles.buttonText} onPress={handleLogin}>
+              Login
+            </ButtonWithLoading>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.registerText}>
                 Don't have an account? <Text style={styles.registerLink}>Register Here</Text>

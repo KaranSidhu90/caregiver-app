@@ -35,7 +35,7 @@ const RegistrationFormStep1: React.FC<Props> = ({ navigation }) => {
       if (userData) {
         setName(userData.name || '');
         setPhoneNumber(userData.phoneNumber || '');
-        setDateOfBirth(userData.dateOfBirth ? new Date(userData.dateOfBirth) : null);
+        setDateOfBirth(userData.dob ? new Date(userData.dob) : null);
         setSelectedGender(userData.gender || '');
         if (phoneNumberInputRef.current) {
           phoneNumberInputRef.current.setValue(userData.phoneNumber || '');

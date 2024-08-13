@@ -9,6 +9,7 @@ import SeniorSidebar from '../app/components/SeniorSidebar';
 import CaregiverSidebar from '../app/components/CaregiverSidebar';
 import { useUserContext } from '../app/providers/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CaregiverRegister from '../app/screens/CaregiverRegistration';
 
 const Drawer = createDrawerNavigator();
 
@@ -40,6 +41,7 @@ const AuthNavigator: React.FC = () => {
       <Drawer.Screen name="Register" component={Registration} />
       <Drawer.Screen name="AfterAuth" component={AfterAuthNavigator} />
       <Drawer.Screen name="CaregiverFlow" component={CaregiverNavigator} />
+      <Drawer.Screen name='CaregiverRegister' component={CaregiverRegister} />
     </Drawer.Navigator>
   );
 };

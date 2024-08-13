@@ -140,24 +140,30 @@ const authController = require('../controllers/authController');
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 id:
+ *                   type: string
+ *                 userType:
+ *                   type: string
  *             example:
- *               id: 60d21b4667d0d8992e610c85
- *               name: John Doe
- *               email: john@example.com
- *               userType: Caregiver
- *               phoneNumber: "123-456-7890"
- *               dob: "1990-01-01"
- *               addressLine1: "123 Main St"
- *               addressLine2: "Apt 4B"
- *               city: "Anytown"
- *               state: "CA"
- *               zipCode: "12345"
- *               imageUrl: "http://example.com/image.jpg"
- *               experience: "5 years"
- *               activeClients: 3
- *               totalClients: 10
- *               skills: ["CPR", "First Aid"]
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               email: "john@example.com"
+ *               name: "John Doe"
+ *               id: "60d21b4667d0d8992e610c85"
+ *               userType: "Caregiver"
+ *       400:
+ *         description: Phone number already in use
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Phone number already in use
  *       500:
  *         description: Some server error
  *         content:
@@ -195,11 +201,14 @@ router.post('/register', authController.register);
  *                   type: string
  *                 id:
  *                   type: string
+ *                 userType:
+ *                   type: string
  *             example:
  *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *               email: "john@example.com"
  *               name: "John Doe"
  *               id: "60d21b4667d0d8992e610c85"
+ *               userType: "Caregiver"
  *       400:
  *         description: Invalid phone number or passcode
  *         content:

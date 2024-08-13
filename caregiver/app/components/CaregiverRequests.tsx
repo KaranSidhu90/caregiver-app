@@ -1,29 +1,126 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { ScrollView, Text, View, StyleSheet } from "react-native";
-import API_ENDPOINTS from "../../config/apiEndpoints";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import CaregiverRequestCard from "./CaregiverRequestCard";
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_ENDPOINTS from '../../config/apiEndpoints';
+import CaregiverRequestCard from './CaregiverRequestCard';
+import { getDistanceMatrix } from '../helpers/distanceMatrixHelper';
+
+type Request = {
+  _id: string;
+  seniorId: string;
+  caregiverId: string;
+  date: string;
+  slots: {
+    morning: boolean;
+    afternoon: boolean;
+    evening: boolean;
+  };
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  additionalInfo: string;
+  seniorDetails: {
+    careNeeds: string[];
+    ailmentCategories: string[];
+    ailments: string[];
+    userType: string;
+    _id: string;
+    name: string;
+    phoneNumber: string;
+    gender: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    imageUrl: string;
+  };
+};
 
 const CaregiverRequests: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [requests, setRequests] = useState();
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [distancesFetched, setDistancesFetched] = useState<boolean>(false);
+  const [userAddress, setUserAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRequestById();
+    fetchCaregiverDetails();
   }, []);
 
-  const fetchRequestById = async () => {
-    const storedUserId = await AsyncStorage.getItem("userId");
+  useEffect(() => {
+    if (requests.length > 0 && userAddress && !distancesFetched) {
+      fetchDistances();
+    }
+  }, [requests, userAddress, distancesFetched]);
+
+  const fetchCaregiverDetails = async () => {
+    const storedUserId = await AsyncStorage.getItem('userId');
+    if (!storedUserId) {
+      setErrorMessage("User ID not found");
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const response = await axios.get(
-        API_ENDPOINTS.BOOKINGS.GET_BY_CAREGIVER_ID(storedUserId!)
-      );
+      const caregiverResponse = await axios.get(API_ENDPOINTS.USERS.GET_CAREGIVER_BY_ID(storedUserId));
+      const caregiverData = caregiverResponse.data;
+      const { addressLine1, addressLine2, city, state, zipCode } = caregiverData;
+      const fullAddress = `${addressLine1} ${addressLine2}, ${city}, ${state} ${zipCode}`;
+      setUserAddress(fullAddress);
+      fetchRequests(storedUserId);
+    } catch (error) {
+      setErrorMessage("An error occurred while fetching caregiver details.");
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRequests = async (caregiverId: string) => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.BOOKINGS.GET_BY_CAREGIVER_ID_DETAILS(caregiverId));
       setRequests(response.data);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error fetching caregivers:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          setErrorMessage("No Pending Requests");
+        } else {
+          setErrorMessage("An error occurred while fetching requests.");
+        }
+      } else {
+        setErrorMessage("An error occurred while fetching requests.");
+      }
+      setIsLoading(false);
+    }
+  };
+
+  const fetchDistances = async () => {
+    if (userAddress) {
+      const destinations = requests.map(
+        request => `${request.seniorDetails.addressLine1} ${request.seniorDetails.addressLine2}, ${request.seniorDetails.city}, ${request.seniorDetails.state} ${request.seniorDetails.zipCode}`
+      );
+
+      try {
+        const distanceData = await getDistanceMatrix([userAddress], destinations);
+
+        const distanceValues = distanceData.rows[0].elements.map((element: any) => ({
+          text: element.distance.text,
+          value: element.distance.value
+        }));
+
+        const requestsWithDistances = requests.map((request, index) => ({
+          ...request,
+          distance: distanceValues[index].text,
+          caregiverAddress: userAddress
+        }));
+
+        setRequests(requestsWithDistances);
+        setDistancesFetched(true);
+      } catch (error) {
+        console.error('Error fetching distances:', error);
+      }
     }
   };
 
@@ -35,8 +132,16 @@ const CaregiverRequests: React.FC = () => {
     );
   }
 
+  if (errorMessage) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.requestsList}>
         {requests &&
           requests.map((req) => {
@@ -57,10 +162,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "#ffffff",
+    fontSize: 18,
+  },
+  scrollViewContent: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    paddingBottom: 120,
+  },
   requestsList: {
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 1,
   },
 });
 

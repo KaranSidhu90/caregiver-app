@@ -77,7 +77,13 @@ const Bookings: React.FC = () => {
         setCaregivers(caregiverMap);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching bookings:', error);
+        if (axios.isAxiosError(error) && error.response?.status === 409) {
+          setCompletedBookings([]);  // No completed bookings
+          setCancelledBookings([]);  // No cancelled bookings
+          setLoading(false);
+        } else {
+          console.error('Error fetching bookings:', error);
+        }
       }
     };
 
@@ -96,7 +102,15 @@ const Bookings: React.FC = () => {
     setCancelledBookings((prev) => prev.filter((booking) => booking._id !== bookingId));
   };
 
-  const renderBookings = (bookings: Booking[]) => {
+  const renderBookings = (bookings: Booking[], noBookingsText: string) => {
+    if (bookings.length === 0) {
+      return (
+        <View style={styles.noBookingsContainer}>
+          <Text style={styles.noBookingsText}>{noBookingsText}</Text>
+        </View>
+      );
+    }
+
     const groupedBookings: GroupedBookings = bookings.reduce((acc: GroupedBookings, booking: Booking) => {
       try {
         const date = format(addDays(parseISO(booking.date), 1), 'EEEE, do MMM, yyyy');
@@ -142,12 +156,12 @@ const Bookings: React.FC = () => {
       >
         <View key="1" style={styles.page}>
           <ScrollView style={styles.fullWidth} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
-            {renderBookings(completedBookings)}
+            {renderBookings(completedBookings, "No Completed Bookings")}
           </ScrollView>
         </View>
         <View key="2" style={styles.page}>
           <ScrollView style={styles.fullWidth} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
-            {renderBookings(cancelledBookings)}
+            {renderBookings(cancelledBookings, "No Cancelled Bookings")}
           </ScrollView>
         </View>
       </ViewPager>
@@ -181,6 +195,16 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingBottom: 80, // Ensures the last item is not hidden
+  },
+  noBookingsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noBookingsText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#888',
   },
 });
 

@@ -88,18 +88,6 @@ const bookingController = require('../controllers/bookingController');
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Booking'
- *             example:
- *               seniorId: "60c72b2f9b1d4c3f2c7e25a8"
- *               caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *               date: "2023-07-10"
- *               slots:
- *                 morning: true
- *                 afternoon: false
- *                 evening: true
- *               location:
- *                 latitude: 50.4501
- *                 longitude: 30.5234
- *               additionalInfo: "Special instructions for the caregiver"
  *       500:
  *         description: Some server error
  *         content:
@@ -140,19 +128,7 @@ router.post('/', authMiddleware, bookingController.createBooking);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Booking'
- *             example:
- *               - seniorId: "60c72b2f9b1d4c3f2c7e25a8"
- *                 caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *                 date: "2023-07-10"
- *                 slots:
- *                   morning: true
- *                   afternoon: false
- *                   evening: true
- *                 location:
- *                   latitude: 50.4501
- *                   longitude: 30.5234
- *                 additionalInfo: "Special instructions for the caregiver"
- *       404:
+ *       409:
  *         description: No bookings found
  *         content:
  *           application/json:
@@ -198,24 +174,6 @@ router.get('/caregiver/:caregiverId', authMiddleware, bookingController.getBooki
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Booking'
- *             example:
- *               - seniorId: "60c72b2f9b1d4c3f2c7e25a8"
- *                 caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *                 date: "2023-07-10"
- *                 slots:
- *                   morning: true
- *                   afternoon: false
- *                   evening: true
- *                 location:
- *                   latitude: 50.4501
- *                   longitude: 30.5234
- *                 additionalInfo: "Special instructions for the caregiver"
- *       404:
- *         description: No bookings found
- *         content:
- *           application/json:
- *             example:
- *               message: "No bookings found for this senior"
  *       500:
  *         description: Some server error
  *         content:
@@ -224,7 +182,6 @@ router.get('/caregiver/:caregiverId', authMiddleware, bookingController.getBooki
  *               message: "Internal server error"
  */
 router.get('/senior/:seniorId', authMiddleware, bookingController.getBookingsBySeniorId);
-
 
 /**
  * @swagger
@@ -255,26 +212,13 @@ router.get('/senior/:seniorId', authMiddleware, bookingController.getBookingsByS
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Booking'
- *             example:
- *               seniorId: "60c72b2f9b1d4c3f2c7e25a8"
- *               caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *               date: "2023-07-10"
- *               slots:
- *                 morning: true
- *                 afternoon: false
- *                 evening: true
- *               location:
- *                 latitude: 50.4501
- *                 longitude: 30.5234
- *               additionalInfo: "Special instructions for the caregiver"
- *               status: "Accepted"
  *       400:
  *         description: Invalid status
  *         content:
  *           application/json:
  *             example:
  *               message: "Invalid status"
- *       404:
+ *       409:
  *         description: Booking not found
  *         content:
  *           application/json:
@@ -289,9 +233,6 @@ router.get('/senior/:seniorId', authMiddleware, bookingController.getBookingsByS
  */
 router.patch('/changeStatus/:bookingId', authMiddleware, bookingController.changeBookingStatus);
 
-
-
-``
 /**
  * @swagger
  * /bookings/{bookingId}:
@@ -317,8 +258,6 @@ router.patch('/changeStatus/:bookingId', authMiddleware, bookingController.chang
  *               status:
  *                 type: string
  *                 enum: [Pending, Accepted, Cancelled, Completed]
- *             example:
- *               status: "Accepted"
  *     responses:
  *       200:
  *         description: Booking status updated successfully
@@ -326,20 +265,7 @@ router.patch('/changeStatus/:bookingId', authMiddleware, bookingController.chang
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Booking'
- *             example:
- *               seniorId: "60c72b2f9b1d4c3f2c7e25a8"
- *               caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *               date: "2023-07-10"
- *               slots:
- *                 morning: true
- *                 afternoon: false
- *                 evening: true
- *               location:
- *                 latitude: 50.4501
- *                 longitude: 30.5234
- *               additionalInfo: "Special instructions for the caregiver"
- *               status: "Accepted"
- *       404:
+ *       409:
  *         description: Booking not found
  *         content:
  *           application/json:
@@ -376,9 +302,7 @@ router.put('/:bookingId', authMiddleware, bookingController.updateBookingStatus)
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Booking'
- *             example:
- *               message: "Booking deleted successfully"
- *       404:
+ *       409:
  *         description: Booking not found
  *         content:
  *           application/json:
@@ -414,7 +338,6 @@ router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
  *         schema:
  *           type: string
  *           enum: [Pending, Accepted, Cancelled, Completed]
- *         description: The booking status
  *     responses:
  *       200:
  *         description: List of booking slots for the caregiver
@@ -438,13 +361,6 @@ router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
  *                     type: boolean
  *                   isFullyBooked:
  *                     type: boolean
- *                 example:
- *                   caregiverId: "60c72b319b1d4c3f2c7e25a9"
- *                   date: "2023-07-10"
- *                   morning: true
- *                   afternoon: false
- *                   evening: true
- *                   isFullyBooked: false
  *       400:
  *         description: Invalid caregiver ID
  *         content:
@@ -458,9 +374,7 @@ router.delete('/:bookingId', authMiddleware, bookingController.deleteBooking);
  *             example:
  *               message: "Internal server error"
  */
-
 router.get('/caregiver/slots/:caregiverId/:status', authMiddleware, bookingController.getBookingSlotsByCaregiverId);
-
 
 /**
  * @swagger
@@ -487,9 +401,6 @@ router.get('/caregiver/slots/:caregiverId/:status', authMiddleware, bookingContr
  *               properties:
  *                 remainingVisits:
  *                   type: number
- *                   description: Number of remaining trial visits
- *               example:
- *                 remainingVisits: 5
  *       500:
  *         description: Some server error
  *         content:
@@ -499,7 +410,120 @@ router.get('/caregiver/slots/:caregiverId/:status', authMiddleware, bookingContr
  */
 router.get('/senior/:seniorId/remaining-trial-visits', authMiddleware, bookingController.getRemainingTrialVisits);
 
-
+/**
+ * @swagger
+ * /bookings/caregiver/{caregiverId}/details:
+ *   get:
+ *     summary: Get booking basic details by caregiver ID with senior information
+ *     tags: [Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: caregiverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The caregiver ID
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [Pending, Accepted, Cancelled, Completed]
+ *         description: The booking status (default is Pending)
+ *     responses:
+ *       200:
+ *         description: List of bookings with senior details for the caregiver
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: The booking ID
+ *                   seniorDetails:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       phoneNumber:
+ *                         type: string
+ *                       gender:
+ *                         type: string
+ *                       dob:
+ *                         type: string
+ *                         format: date
+ *                       careNeeds:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       ailmentCategories:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       ailments:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       imageUrl:
+ *                         type: string
+ *                       addressLine1:
+ *                         type: string
+ *                       addressLine2:
+ *                         type: string
+ *                       city:
+ *                         type: string
+ *                       state:
+ *                         type: string
+ *                       zipCode:
+ *                         type: string
+ *                   caregiverId:
+ *                     type: string
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                   slots:
+ *                     type: object
+ *                     properties:
+ *                       morning:
+ *                         type: boolean
+ *                       afternoon:
+ *                         type: boolean
+ *                       evening:
+ *                         type: boolean
+ *                   location:
+ *                     type: object
+ *                     properties:
+ *                       latitude:
+ *                         type: number
+ *                       longitude:
+ *                         type: number
+ *                   additionalInfo:
+ *                     type: string
+ *       400:
+ *         description: Invalid caregiver ID
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid caregiver ID"
+ *       409:
+ *         description: No bookings found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "No Pending bookings found for this caregiver"
+ *       500:
+ *         description: Some server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Internal server error"
+ */
+router.get('/caregiver/:caregiverId/details', authMiddleware, bookingController.getBookingBasicDetailsByCaregiverId);
 
 
 module.exports = router;

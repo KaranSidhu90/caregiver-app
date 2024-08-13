@@ -62,9 +62,7 @@ const SeniorSidebar: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Booking Agenda')}>
           <Text style={styles.menuItem}>Booking Agenda</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Caregiver Dashboard')}>
-          <Text style={styles.menuItem}>Caregiver Dashboard (Temp)</Text>
-        </TouchableOpacity>
+        
       </View>
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={[styles.button, styles.signOutButton]} onPress={handleSignOut}>

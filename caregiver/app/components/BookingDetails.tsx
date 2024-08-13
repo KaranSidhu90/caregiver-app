@@ -7,17 +7,34 @@ import API_ENDPOINTS from '../../config/apiEndpoints';
 import { getAvatarUrl } from '../helpers/common';
 import { getDistanceMatrix } from '../helpers/distanceMatrixHelper';
 import { format } from 'date-fns';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+
+// Define the navigation stack parameter list
+type RootStackParamList = {
+  RatingScreen: { bookingId: string; caregiverId: string; seniorId: string };
+  // Add other screens in the stack as needed
+  OtherScreen: undefined;
+};
+
+// Define the navigation prop and route prop types
+type BookingDetailsNavigationProp = StackNavigationProp<RootStackParamList, 'RatingScreen'>;
+type BookingDetailsRouteProp = RouteProp<RootStackParamList, 'RatingScreen'>;
 
 type Props = {
   booking: any;
   caregiver: any;
   onClose: () => void;
   onBookingChange: (bookingId: string) => void;
+  navigation?: BookingDetailsNavigationProp;
+  route?: BookingDetailsRouteProp;
 };
 
 const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookingChange }) => {
   const [distance, setDistance] = useState<string | null>(null);
   const avatarUrl = getAvatarUrl(caregiver ? caregiver.name : 'Unknown', caregiver?.imageUrl);
+  const navigation = useNavigation<BookingDetailsNavigationProp>();
 
   useEffect(() => {
     const fetchDistance = async () => {
@@ -50,9 +67,16 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
     try {
       const url = API_ENDPOINTS.BOOKINGS.CHANGE_STATUS(booking._id, 'Completed');
       await axios.patch(url);
+
       onBookingChange(booking._id);
       onClose();
-      toast.success('Booking completed successfully');
+
+      // Navigate to the RatingScreen with the necessary parameters
+      navigation.navigate('RatingScreen', {
+        bookingId: booking._id,
+        caregiverId: caregiver._id,
+        seniorId: booking.seniorId,
+      });
     } catch (error) {
       console.error('Error completing booking:', error);
       toast.error('Error completing booking');
@@ -82,8 +106,31 @@ const BookingDetails: React.FC<Props> = ({ booking, caregiver, onClose, onBookin
         <Icon name="close" size={24} color="#000" />
       </TouchableOpacity>
       <View style={styles.statusContainer}>
-        <View style={[styles.statusChip, booking.status === 'Accepted' ? styles.acceptedChip : booking.status === 'Completed' ? styles.completedChip : booking.status === 'Cancelled' ? styles.cancelledChip : styles.pendingChip]}>
-          <Icon name={booking.status === 'Accepted' ? 'check-circle' : booking.status === 'Completed' ? 'done' : booking.status === 'Cancelled' ? 'cancel' : 'hourglass-empty'} size={20} color="#fff" />
+        <View
+          style={[
+            styles.statusChip,
+            booking.status === 'Accepted'
+              ? styles.acceptedChip
+              : booking.status === 'Completed'
+              ? styles.completedChip
+              : booking.status === 'Cancelled'
+              ? styles.cancelledChip
+              : styles.pendingChip,
+          ]}
+        >
+          <Icon
+            name={
+              booking.status === 'Accepted'
+                ? 'check-circle'
+                : booking.status === 'Completed'
+                ? 'done'
+                : booking.status === 'Cancelled'
+                ? 'cancel'
+                : 'hourglass-empty'
+            }
+            size={20}
+            color="#fff"
+          />
           <Text style={styles.statusText}>{booking.status}</Text>
         </View>
       </View>
