@@ -10,9 +10,12 @@ type Props = {
 };
 
 const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
+  // State to track the selected date
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // State to store bookings filtered by the selected date
   const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
 
+  // Handles the date selection and filters bookings for that date
   const handleDateSelected = (date: string) => {
     setSelectedDate(format(parseISO(date), 'EEEE, do MMM, yyyy'));
     const formattedActualDate = format(addDays(parseISO(date), -1), 'yyyy-MM-dd');
@@ -21,6 +24,7 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
     );
   };
 
+  // Marks dates on the calendar that have bookings
   const getMarkedDates = () => {
     const markedDates: any = {};
     bookings.forEach((booking) => {
@@ -47,8 +51,8 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
           current={selectedDate || undefined}
           minDate={'2024-01-01'}
           maxDate={'2025-12-31'}
-          onDayPress={(day: DateData) => handleDateSelected(day.dateString)}
-          markedDates={getMarkedDates()}
+          onDayPress={(day: DateData) => handleDateSelected(day.dateString)} // Trigger date selection
+          markedDates={getMarkedDates()} // Mark dates with bookings
           markingType={'simple'}
           theme={{
             calendarBackground: '#ffffff',
@@ -71,8 +75,9 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
         <View style={styles.bookingsContainer}>
           <Text style={styles.selectedDate}>{selectedDate}</Text>
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+            {/* Render booking cards for the selected date */}
             {filteredBookings.map((booking) => (
-              <BookingCard key={booking._id} booking={booking} caregiver={caregivers[booking.caregiverId]} />
+              <BookingCard key={booking._id} booking={booking}  caregiver={caregivers[booking.caregiverId]} />
             ))}
           </ScrollView>
         </View>
@@ -113,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 80, // Adjust padding as needed
+    paddingBottom: 80, 
   },
 });
 

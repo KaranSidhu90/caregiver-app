@@ -18,7 +18,7 @@ const SeniorSidebar: React.FC<Props> = ({ navigation }) => {
       const fetchUserType = async () => {
         try {
           const storedUserType = await AsyncStorage.getItem('userType');
-          console.log('Stored user type:', storedUserType);
+          
           if (storedUserType) {
             setUserType(storedUserType);
           }

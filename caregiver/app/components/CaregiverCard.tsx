@@ -12,22 +12,27 @@ type Props = {
     experience: string;
     rating?: number;
     imageUrl?: string;
+    distance?: string;
   };
   navigation: any;
   distance?: string;
 };
 
 const CaregiverCard: React.FC<Props> = ({ caregiver, navigation, distance }) => {
+  // State to hold the average rating of the caregiver
   const [averageRating, setAverageRating] = useState<string | number | null>(null);
 
+  // Get the avatar URL or use a placeholder if not available
   const avatarUrl = getAvatarUrl(caregiver.name, caregiver.imageUrl);
 
   useEffect(() => {
+    // Function to fetch the average rating for the caregiver
     const fetchAverageRating = async () => {
       try {
         const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_AVERAGE_RATING(caregiver._id));
         const { averageRating } = response.data;
 
+        // Set the average rating or default to 'Not Rated'
         setAverageRating(averageRating !== undefined ? parseFloat(averageRating.toFixed(1)) : 'Not Rated');
       } catch (error) {
         if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
@@ -39,13 +44,24 @@ const CaregiverCard: React.FC<Props> = ({ caregiver, navigation, distance }) => 
       }
     };
 
-    fetchAverageRating();
+    fetchAverageRating(); // Fetch the rating when the component mounts
   }, [caregiver._id]);
+
+  // Handle the press event for the card
+  const handlePress = () => {
+    // Add the distance to the caregiver object before navigating
+    const caregiverWithDistance = {
+      ...caregiver,
+      distance: distance || caregiver.distance, // Use the provided distance or existing one
+    };
+
+    navigation.navigate('Profile', { caregiver: caregiverWithDistance });
+  };
 
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('Profile', { caregiver })}
+      onPress={handlePress}
     >
       <Image
         source={{ uri: avatarUrl }}
@@ -86,7 +102,7 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   caregiverName: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Poppins-Medium',
     color: '#4A4A4A',
   },

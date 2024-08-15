@@ -54,7 +54,7 @@ const AfterAuthNavigator = () => {
       <Stack.Screen
         name="RatingScreen"
         component={RatingScreen}
-        options={{ headerBackTitle: "" }}
+        options={{ headerBackTitle: "", headerShown: false }}
       />
     </Stack.Navigator>
   );

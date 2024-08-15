@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Tabs from "../components/Tabs";
 import CaregiverRequests from "../components/CaregiverRequests";
 import CaregiverBookingList from "../components/CaregiverBookingList";
+import CaregiverAgendaCalendar from "../components/CaregiverAgendaCalendar";
 
 type Props = {
   navigation: any;
@@ -92,6 +93,7 @@ const CaregiverDashboard: React.FC<Props> = ({ navigation }) => {
           <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} isWide={true} fontSize={15} />
           {activeTab === "requests" && <CaregiverRequests />}
           {activeTab === "bookings" && <CaregiverBookingList />}
+          {activeTab === "calendar" && <CaregiverAgendaCalendar />}
         </View>
       </ScrollView>
     </View>

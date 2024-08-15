@@ -43,22 +43,23 @@ type Booking = {
 };
 
 const CaregiverBookingList: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [distancesFetched, setDistancesFetched] = useState<boolean>(false);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // State to manage loading status
+  const [bookings, setBookings] = useState<Booking[]>([]); // State to hold bookings data
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // State to hold error messages
+  const [distancesFetched, setDistancesFetched] = useState<boolean>(false); // State to track if distances have been fetched
+  const [userAddress, setUserAddress] = useState<string | null>(null); // State to hold the user's address
 
   useEffect(() => {
-    fetchCaregiverDetails();
+    fetchCaregiverDetails(); // Fetch caregiver details on component mount
   }, []);
 
   useEffect(() => {
     if (bookings.length > 0 && userAddress && !distancesFetched) {
-      fetchDistances();
+      fetchDistances(); // Fetch distances once bookings and user address are available
     }
   }, [bookings, userAddress, distancesFetched]);
 
+  // Fetches caregiver details from AsyncStorage and the API
   const fetchCaregiverDetails = async () => {
     const storedUserId = await AsyncStorage.getItem('userId');
     if (!storedUserId) {
@@ -72,19 +73,21 @@ const CaregiverBookingList: React.FC = () => {
       const caregiverData = caregiverResponse.data;
       const { addressLine1, addressLine2, city, state, zipCode } = caregiverData;
       const fullAddress = `${addressLine1} ${addressLine2}, ${city}, ${state} ${zipCode}`;
-      setUserAddress(fullAddress);
-      fetchBookings(storedUserId);
+      setUserAddress(fullAddress); // Set the user's full address
+      fetchBookings(storedUserId); // Fetch bookings after setting the user address
     } catch (error) {
       setErrorMessage("An error occurred while fetching caregiver details.");
       setIsLoading(false);
     }
   };
 
+  // Fetches bookings for the caregiver based on their ID
   const fetchBookings = async (caregiverId: string) => {
     try {
       const response = await axios.get(API_ENDPOINTS.BOOKINGS.GET_BY_CAREGIVER_ID_DETAILS(caregiverId)+ "?status=Accepted");
       const acceptedBookings = response.data;
-      setBookings(acceptedBookings);
+      console.log('acceptedBookings', acceptedBookings);
+      setBookings(acceptedBookings); // Set the fetched bookings
       setIsLoading(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -100,6 +103,7 @@ const CaregiverBookingList: React.FC = () => {
     }
   };
 
+  // Fetches distances between the caregiver's address and each booking's location
   const fetchDistances = async () => {
     if (userAddress) {
       const destinations = bookings.map(
@@ -120,8 +124,8 @@ const CaregiverBookingList: React.FC = () => {
           caregiverAddress: userAddress
         }));
 
-        setBookings(bookingsWithDistances);
-        setDistancesFetched(true);
+        setBookings(bookingsWithDistances); // Set bookings with distances included
+        setDistancesFetched(true); // Mark distances as fetched
       } catch (error) {
         console.error('Error fetching distances:', error);
       }
@@ -131,7 +135,7 @@ const CaregiverBookingList: React.FC = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>Loading...</Text> 
       </View>
     );
   }
@@ -139,7 +143,7 @@ const CaregiverBookingList: React.FC = () => {
   if (errorMessage) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{errorMessage}</Text>
+        <Text style={styles.errorText}>{errorMessage}</Text> 
       </View>
     );
   }
@@ -153,8 +157,8 @@ const CaregiverBookingList: React.FC = () => {
               <CaregiverRequestCard
                 key={booking._id}
                 data={booking}
-                iconColor="#295259" // Primary green color for icons
-                buttonColor="#295259" // Primary green color for buttons
+                iconColor="#295259" 
+                buttonColor="#295259" 
               />
             );
           })}

@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Medium',
   },
   loadingIndicator: {
-    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center'
   }

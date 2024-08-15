@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import API_ENDPOINTS from '../../config/apiEndpoints';
-import { toast } from '@backpackapp-io/react-native-toast'; 
+import { toast } from '@backpackapp-io/react-native-toast';
 import { CaregiverStackParamList } from '../../@types/types';
 
 type Props = {
@@ -12,51 +12,91 @@ type Props = {
 
 const BookingActionButtons: React.FC<Props> = ({ data }) => {
   const navigation = useNavigation<NavigationProp<CaregiverStackParamList>>();
+  const bookingId = data?.params?.request?._id; // Extract booking ID from data
+  const status = data?.params?.request?.status; // Extract status from data
 
-  const handleAcceptBooking = async () => {
+  // Handles changing the booking status
+  const handleStatusChange = async (newStatus: string) => {
     try {
-      const bookingId = data?.params?.request?._id;
-      const url = API_ENDPOINTS.BOOKINGS.CHANGE_STATUS(bookingId, 'Accepted');
-      await axios.patch(url);
+      const url = API_ENDPOINTS.BOOKINGS.CHANGE_STATUS(bookingId, newStatus); // Construct API URL
+      await axios.patch(url); // Send PATCH request to update status
 
-      navigation.navigate('CaregiverDashboard');
-      toast.success('Booking Accepted successfully');
+      navigation.navigate('CaregiverDashboard'); // Navigate back to dashboard
+      toast.success(`Booking ${newStatus} successfully`); // Show success message
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Error accepting booking:', error.response);
+        console.error(`Error changing booking status to ${newStatus}:`, error.response); // Log Axios-specific error
       } else {
-        console.error('Unexpected error accepting booking:', error);
+        console.error(`Unexpected error changing booking status to ${newStatus}:`, error); // Log general error
       }
-      toast.error('Error accepting booking');
+      toast.error(`Error changing booking status to ${newStatus}`); // Show error message
     }
   };
 
-  const handleCancelBooking = async () => {
-    try {
-      const bookingId = data?.params?.request?._id;
-      const url = API_ENDPOINTS.BOOKINGS.CHANGE_STATUS(bookingId, 'Cancelled');
-      await axios.patch(url);
-
-      navigation.navigate('CaregiverDashboard');
-      toast.success('Booking cancelled successfully');
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Error cancelling booking:', error.response);
-      } else {
-        console.error('Unexpected error cancelling booking:', error);
-      }
-      toast.error('Error cancelling booking');
+  // Renders action buttons based on the current booking status
+  const renderButtons = () => {
+    switch (status) {
+      case 'Accepted':
+        return (
+          <>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmButton]}
+              onPress={() => handleStatusChange('Pending')}
+            >
+              <Text style={styles.buttonText}>MOVE TO PENDING</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.declineButton]}
+              onPress={() => handleStatusChange('Cancelled')}
+            >
+              <Text style={styles.buttonText}>DECLINE</Text>
+            </TouchableOpacity>
+          </>
+        );
+      case 'Pending':
+        return (
+          <>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmButton]}
+              onPress={() => handleStatusChange('Accepted')}
+            >
+              <Text style={styles.buttonText}>ACCEPT REQUEST</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.declineButton]}
+              onPress={() => handleStatusChange('Cancelled')}
+            >
+              <Text style={styles.buttonText}>DECLINE</Text>
+            </TouchableOpacity>
+          </>
+        );
+      case 'Completed':
+        return (
+          <TouchableOpacity
+            style={[styles.button, styles.confirmButton]}
+            // Uncomment below to navigate to the review screen
+            // onPress={() => navigation.navigate('ReviewScreen', { bookingId })}
+          >
+            <Text style={styles.buttonText}>SHOW REVIEW</Text>
+          </TouchableOpacity>
+        );
+      case 'Cancelled':
+        return (
+          <TouchableOpacity
+            style={[styles.button, styles.confirmButton]}
+            onPress={() => handleStatusChange('Pending')}
+          >
+            <Text style={styles.buttonText}>MOVE BACK TO PENDING</Text>
+          </TouchableOpacity>
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <View style={styles.buttonContainer}>
-      <TouchableOpacity style={[styles.button, styles.confirmButton]} onPress={handleAcceptBooking}>
-        <Text style={styles.buttonText}>ACCEPT REQUEST</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.declineButton]} onPress={handleCancelBooking}>
-        <Text style={styles.buttonText}>DECLINE</Text>
-      </TouchableOpacity>
+      {renderButtons()} {/* Render the action buttons */}
     </View>
   );
 };

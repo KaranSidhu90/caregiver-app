@@ -101,11 +101,12 @@ const CaregiverProfile: React.FC<Props> = ({ navigation, route }) => {
           caregiverId={caregiverData._id}
         />
         <CaregiverStats
+          distance={caregiverData.distance}
           category={caregiverData.category}
           activeClients={caregiverData.activeClients}
           totalClients={caregiverData.totalClients}
         />
-        <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} />
+        <Tabs tabs={tabs} activeTab={activeTab} fontSize={18} onTabPress={handleTabPress} />
         {activeTab === 'Skills' ? (
           <Skills skills={caregiverData.skills ?? []} />
         ) : (

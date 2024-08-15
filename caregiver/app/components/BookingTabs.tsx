@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 type BookingTabsProps = {
   activeTab: number;
   onChangeTab: (index: number) => void;
-  tabs: string[]; // Add tabs prop
+  tabs: string[];
 };
 
 const BookingTabs: React.FC<BookingTabsProps> = ({ activeTab, onChangeTab, tabs }) => {

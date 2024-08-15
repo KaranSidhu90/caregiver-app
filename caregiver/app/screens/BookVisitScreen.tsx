@@ -50,7 +50,7 @@ const BookVisitScreen: React.FC<Props> = ({ navigation, route }) => {
   
         // Handle the case where bookings might be empty
         if (bookings.length === 0) {
-          console.log('No bookings found for caregiver.');
+          
         } else {
           const slots = bookings.reduce((acc: any, booking: any) => {
             acc[booking.date] = {

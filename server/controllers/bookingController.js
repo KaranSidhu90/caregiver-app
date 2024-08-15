@@ -242,6 +242,7 @@ exports.getBookingBasicDetailsByCaregiverId = async (req, res, next) => {
         const senior = await User.Senior.findById(booking.seniorId, {
           name: 1,
           phoneNumber: 1,
+          status: 1,
           gender: 1,
           careNeeds: 1,
           ailmentCategories: 1,

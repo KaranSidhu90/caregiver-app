@@ -21,7 +21,7 @@ import FormSeparator from "./FormSeparator";
 import axios from "axios";
 import API_ENDPOINTS from "../../config/apiEndpoints";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useUserContext } from '../providers/UserContext'; // Import UserContext
+import { useUserContext } from '../providers/UserContext'; 
 
 type Props = {
   navigation: any;
@@ -61,8 +61,8 @@ const caregiverCategories = [
 const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
   const [formData, setFormData] = useState<Partial<RegisterFormData>>({});
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // For handling loading state
-  const { setUserType, setUserName, setUserId } = useUserContext(); // Use UserContext
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setUserType, setUserName, setUserId } = useUserContext(); 
   
   const {
     name,
@@ -83,7 +83,7 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
     passCode,
   } = formData;
 
-  // Fill the form with mock user data (you can remove this in production)
+  
   useEffect(() => {
     setFormData({
       name: "John Doe",
@@ -179,9 +179,9 @@ const CaregiverRegisterForm: React.FC<Props> = ({ navigation }) => {
         Alert.alert("Error", "Registration failed. Please try again.");
       }
     } catch (error) {
-      console.log("Error during API call:", error);
+      
       if (axios.isAxiosError(error) && error.response) {
-        console.log("API Error Response:", error.response.data);
+        
         Alert.alert("Error", `Registration failed: ${error.response.data.message}`);
       } else {
         Alert.alert("Error", "Registration failed. Please try again.");

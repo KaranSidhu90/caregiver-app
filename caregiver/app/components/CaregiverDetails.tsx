@@ -13,13 +13,16 @@ type Props = {
 };
 
 const CaregiverDetails: React.FC<Props> = ({ name, experience, rating, displayImage, defaultImage, caregiverId }) => {
+  // State to hold the average rating of the caregiver
   const [averageRating, setAverageRating] = useState<string | number | null>(null);
 
+  // Determine the avatar URL or use a default placeholder
   const avatarUrl = displayImage
     ? displayImage
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=295259&color=fff&size=200&rounded=true`;
 
   useEffect(() => {
+    // Function to fetch reviews and calculate the average rating
     const fetchReviews = async () => {
       try {
         const response = await axios.get(API_ENDPOINTS.REVIEWS.GET_BY_RECEIVER_ID(caregiverId));
@@ -34,7 +37,7 @@ const CaregiverDetails: React.FC<Props> = ({ name, experience, rating, displayIm
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
-          setAverageRating('Not Rated'); // On 404 error, set rating to "Not Rated"
+          setAverageRating('Not Rated'); 
         } else {
           console.error('Error fetching reviews:', error);
           setAverageRating('Trouble Loading Rating');
@@ -42,7 +45,7 @@ const CaregiverDetails: React.FC<Props> = ({ name, experience, rating, displayIm
       }
     };
 
-    fetchReviews();
+    fetchReviews(); // Fetch reviews when the component mounts
   }, [caregiverId]);
 
   return (

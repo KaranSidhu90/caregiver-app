@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import Rating from 'react-native-star-rating-widget';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import axios from 'axios';
@@ -7,7 +7,6 @@ import API_ENDPOINTS from '../../config/apiEndpoints';
 import { toast } from '@backpackapp-io/react-native-toast';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-// Define the type for the route parameters
 type RatingScreenRouteParams = {
   bookingId: string;
   caregiverId: string;
@@ -40,7 +39,7 @@ const RatingScreen: React.FC = () => {
         comment: review,
       });
       toast.success('Thank you for your feedback!');
-      navigation.goBack(); // Navigate back to the previous screen or dashboard
+      navigation.goBack(); 
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error('Failed to submit review. Please try again.');
@@ -60,7 +59,7 @@ const RatingScreen: React.FC = () => {
           starSize={40}
           style={styles.rating}
           color="#295259" // Primary green color of the app
-          enableHalfStar={false} // Only full stars
+          enableHalfStar={false}
         />
         <TextInput
           style={styles.reviewInput}
@@ -70,7 +69,13 @@ const RatingScreen: React.FC = () => {
           multiline
           numberOfLines={4}
         />
-        <Button title="Submit" onPress={handleSubmit} disabled={rating === 0} />
+        <TouchableOpacity
+          style={[styles.button, rating === 0 && styles.disabledButton]}
+          onPress={handleSubmit}
+          disabled={rating === 0}
+        >
+          <Text style={styles.buttonText}>Submit</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -97,11 +102,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center', // Center content vertically
+    justifyContent: 'center',
   },
   rating: {
     marginBottom: 20,
-    alignSelf: 'center', // Center stars horizontally
+    alignSelf: 'center',
   },
   reviewInput: {
     height: 100,
@@ -111,6 +116,21 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlignVertical: 'top',
     marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#295259',
+    borderRadius: 25,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#A5A5A5',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: 'Poppins-Semibold',
   },
 });
 

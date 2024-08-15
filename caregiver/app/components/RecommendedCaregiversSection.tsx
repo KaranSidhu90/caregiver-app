@@ -13,15 +13,15 @@ const Dashboard: React.FC<Props> = ({ navigation }) => {
   const timeOfDayGreeting = 'Good Morning'; 
 
   const caregivers = [
-    { name: 'Cally Smith', experience: '10 Year Experience', rating: 4.9 },
-    { name: 'Nicole Baker', experience: '8 Year Experience', rating: 4.9 },
-    { name: 'Sam Johnson', experience: '2 Year Experience', rating: 4.2 },
-    { name: 'Jenny Hudson', experience: '5 Year Experience', rating: 3.5 },
+    { _id:'123', name: 'Cally Smith', experience: '10 Year Experience', rating: 4.9 },
+    { _id:'456', name: 'Nicole Baker', experience: '8 Year Experience', rating: 4.9 },
+    { _id:'789', name: 'Sam Johnson', experience: '2 Year Experience', rating: 4.2 },
+    { _id:'987', name: 'Jenny Hudson', experience: '5 Year Experience', rating: 3.5 },
   ];
 
   return (
     <View style={styles.container}>
-      <DashboardHeader name={userName} timeOfDay={timeOfDayGreeting} />
+      <DashboardHeader navigation={'none'} name={userName} timeOfDay={timeOfDayGreeting} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.dataContainer}>
           <Text style={styles.trialText}>As a new user we provide free of cost trial visits</Text>

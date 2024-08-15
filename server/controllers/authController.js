@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 exports.register = async (req, res, next) => {
   try {
-    console.log('Request body:', req.body); // Log the request body for debugging
+     // Log the request body for debugging
 
     const {
       name, email, passcode, phoneNumber, gender, dob, addressLine1,
@@ -28,7 +28,7 @@ exports.register = async (req, res, next) => {
     // Hash the passcode
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(passcode, salt);
-    console.log('Hashed Password:', hashedPassword); // Log the hashed password
+     // Log the hashed password
 
     // Transform the careNeeds into an object with boolean values
     const careNeedsData = {
@@ -62,7 +62,7 @@ exports.register = async (req, res, next) => {
       skills, 
       category
     };
-    console.log('New User Data:', newUserData); // Log the user data to be saved
+     // Log the user data to be saved
 
     // Save the new user
     const newUser = new User(newUserData);
@@ -95,7 +95,7 @@ exports.login = async (req, res, next) => {
   try {
     const { phoneNumber, passcode } = req.body;
     
-    console.log('Login Request:', { phoneNumber, passcode }); // Log the incoming request data
+     // Log the incoming request data
 
     const user = await User.findOne({ phoneNumber });
     if (!user) {
@@ -103,7 +103,7 @@ exports.login = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid phone number or passcode' });
     }
 
-    console.log('User found:', { id: user._id, name: user.name, phoneNumber: user.phoneNumber }); // Log the found user
+     // Log the found user
 
     const isMatch = await bcrypt.compare(passcode, user.password); // Assuming passcode is stored as a hashed password
     if (!isMatch) {
@@ -111,13 +111,11 @@ exports.login = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid phone number or passcode' });
     }
 
-    console.log('Passcode matched for user:', user._id); // Log when the passcode matches
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    console.log('Generated token for user:', user._id); // Log the token generation
 
     res.json({ 
       token, 
@@ -127,7 +125,6 @@ exports.login = async (req, res, next) => {
       userType: user.userType 
     });
 
-    console.log('Login response sent successfully for user:', user._id); // Log the success response
 
   } catch (err) {
     console.error('Error during login:', err);

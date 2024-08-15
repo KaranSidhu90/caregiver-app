@@ -17,13 +17,13 @@ const VisitDatePicker: React.FC<Props> = ({ onDateChange, caregiverId, bookedSlo
     const closestAvailableDate = findClosestAvailableDate(availableDays);
     setSelectedDate(closestAvailableDate);
     onDateChange(closestAvailableDate);
-    console.log("Closest available date set: ", closestAvailableDate);
+    
   }, [availableDays, onDateChange]);
 
   useEffect(() => {
-    console.log("Available days: ", availableDays);
-    console.log("Booked slots: ", bookedSlots);
-    console.log("Selected date: ", selectedDate);
+    
+    
+    
   }, [availableDays, bookedSlots, selectedDate]);
 
   const findClosestAvailableDate = (availableDays: string[]) => {
@@ -41,7 +41,7 @@ const VisitDatePicker: React.FC<Props> = ({ onDateChange, caregiverId, bookedSlo
   const handleDateSelected = (date: string) => {
     setSelectedDate(date);
     onDateChange(date);
-    console.log("Date selected: ", date);
+    
   };
 
   const isDayAvailable = (day: string) => {
@@ -98,7 +98,7 @@ const VisitDatePicker: React.FC<Props> = ({ onDateChange, caregiverId, bookedSlo
       },
     };
 
-    console.log("Marked dates: ", markedDates);
+    
     return markedDates;
   };
 

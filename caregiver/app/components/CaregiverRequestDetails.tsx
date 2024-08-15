@@ -7,53 +7,60 @@ import { format } from 'date-fns';
 import { ScrollView } from 'react-native-gesture-handler';
 
 type Props = {
-  request: any;
-  onClose: () => void;
-  onConfirmRequest: (requestId: string) => void;
-  onDeclineRequest: (requestId: string) => void;
+  request: any; // Type for the request object passed as a prop
+  onClose: () => void; // Function to close the details screen
+  onConfirmRequest: (requestId: string) => void; // Function to handle request confirmation
+  onDeclineRequest: (requestId: string) => void; // Function to handle request decline
 };
 
 const CaregiverRequestDetails: React.FC<Props> = ({ request, onClose, onConfirmRequest, onDeclineRequest }) => {
-  const { seniorDetails, date, distance, additionalInfo } = request;
-  const { ailmentCategories, ailments, careNeeds } = seniorDetails || {};
+  const { seniorDetails, date, distance, additionalInfo } = request; // Destructure the relevant properties from the request object
+  const { ailmentCategories, ailments, careNeeds } = seniorDetails || {}; // Destructure nested properties, or set to an empty object if undefined
 
-  const [activeTab, setActiveTab] = useState('Details');
+  const [activeTab, setActiveTab] = useState('Details'); // State to track which tab is currently active
 
+  // Effect that runs when the request changes
   useEffect(() => {
-    console.log('Request Data:', request);
+    // Perform any side effects or data fetching here based on the request
   }, [request]);
 
+  // Early return if seniorDetails is not available
   if (!seniorDetails) {
-    console.log('No senior details available.');
     return <Text>No senior details available.</Text>;
   }
 
+  // Another effect that runs when seniorDetails changes (could be combined with the previous effect if necessary)
   useEffect(() => {
-    console.log('Senior Details:', seniorDetails);
+    // Perform any side effects based on seniorDetails here
   }, [seniorDetails]);
 
+  // Generate the avatar URL using a helper function
   const avatarUrl = getAvatarUrl(seniorDetails.name || "Unknown", seniorDetails.imageUrl);
-  const formattedDate = format(new Date(date), 'EEEE, do MMMM, yyyy');
 
+  // Function to format care types into a more readable format
   const formatCareType = (careType: string) => {
     return careType
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, (str) => str.toUpperCase());
+      .replace(/([A-Z])/g, ' $1') // Add a space before capital letters
+      .replace(/^./, (str) => str.toUpperCase()); // Capitalize the first letter
   };
 
+  // Format the first care need or set to 'Unknown Care' if undefined
   const formattedCareNeeds = careNeeds ? formatCareType(careNeeds[0]) : 'Unknown Care';
 
+  // Define the tabs for the tabbed interface
   const tabs = [
-    { label: 'Details', value: 'Details' },
-    { label: 'Special Needs', value: 'SpecialNeeds' },
+    { label: 'Details', value: 'Details' }, // Tab for details
+    { label: 'Special Needs', value: 'SpecialNeeds' }, // Tab for special needs
   ];
 
+  // Function to handle tab selection
   const handleTabPress = (tab: string) => {
-    setActiveTab(tab);
+    setActiveTab(tab); 
   };
 
   return (
     <View style={styles.container}>
+      {/* Close button to exit the details screen */}
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Icon name="close" size={24} color="#000" />
       </TouchableOpacity>
@@ -61,70 +68,71 @@ const CaregiverRequestDetails: React.FC<Props> = ({ request, onClose, onConfirmR
       <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       <Text style={styles.name}>{seniorDetails.name || "Unknown"}</Text>
       <Text style={styles.ageGender}>{`${calculateAge(seniorDetails.dob)} Years, ${seniorDetails.gender || "Unknown"}`}</Text>
+
       <Text style={styles.requirementTitle}>Requirement</Text>
       <Text style={styles.requirement}>{formattedCareNeeds}</Text>
 
       <Tabs tabs={tabs} activeTab={activeTab} onTabPress={handleTabPress} />
-      <ScrollView style={styles.scrollView}>
-      <View style={styles.tabContainer}>
-        {activeTab === 'Details' ? (
-          <View style={styles.additionalInfoContainer}>
-            <Text style={styles.additionalInfo}>
-              {additionalInfo || 'No additional details provided.'}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.specialNeedsContainer}>
-            <Text style={styles.specialNeedsHeader}>Ailment Categories</Text>
-            <View style={styles.chipsContainer}>
-              {ailmentCategories && ailmentCategories.length > 0 ? (
-                ailmentCategories.map((category: string, index: number) => (
-                  <View key={index} style={styles.chip}>
-                    <Text style={styles.chipText}>{category}</Text>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noSpecialNeedsText}>No ailment categories available.</Text>
-              )}
-            </View>
-            
-            <Text style={styles.specialNeedsHeader}>Ailments</Text>
-            <View style={styles.chipsContainer}>
-              {ailments && ailments.length > 0 ? (
-                ailments.map((ailment: string, index: number) => (
-                  <View key={index} style={styles.chip}>
-                    <Text style={styles.chipText}>{ailment}</Text>
-                  </View>
-                ))
-              ) : (
-                <Text style={styles.noSpecialNeedsText}>No ailments available.</Text>
-              )}
-            </View>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.mapContainer}>
-        <Icon name="location-on" size={24} color="#C2A27C" />
-        <Text style={styles.distanceText}>{distance || "Unknown"} away</Text>
-      </View>
-
-      <View style={styles.addressContainer}>
-        <Text style={styles.addressText}>{seniorDetails.addressLine1}</Text>
-        <Text style={styles.addressText}>{seniorDetails.addressLine2}</Text>
-        <Text style={styles.addressText}>{`${seniorDetails.city}, ${seniorDetails.state} ${seniorDetails.zipCode}`}</Text>
-      </View>
-      </ScrollView>
-      <View style={styles.buttonContainer}>
-      <TouchableOpacity style={[styles.button, styles.bookButton]}>
-        <Text style={styles.buttonText}>ACCEPT REQUEST</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.goBackButton]} >
-        <Text style={styles.buttonText}>DECLINE</Text>
-      </TouchableOpacity>
-    </View>
-
       
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.tabContainer}>
+          {activeTab === 'Details' ? (
+            <View style={styles.additionalInfoContainer}>
+              <Text style={styles.additionalInfo}>
+                {additionalInfo || 'No additional details provided.'}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.specialNeedsContainer}>
+              <Text style={styles.specialNeedsHeader}>Ailment Categories</Text>
+              <View style={styles.chipsContainer}>
+                {ailmentCategories && ailmentCategories.length > 0 ? (
+                  ailmentCategories.map((category: string, index: number) => (
+                    <View key={index} style={styles.chip}>
+                      <Text style={styles.chipText}>{category}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noSpecialNeedsText}>No ailment categories available.</Text>
+                )}
+              </View>
+              
+              <Text style={styles.specialNeedsHeader}>Ailments</Text>
+              <View style={styles.chipsContainer}>
+                {ailments && ailments.length > 0 ? (
+                  ailments.map((ailment: string, index: number) => (
+                    <View key={index} style={styles.chip}>
+                      <Text style={styles.chipText}>{ailment}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noSpecialNeedsText}>No ailments available.</Text>
+                )}
+              </View>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.mapContainer}>
+          <Icon name="location-on" size={24} color="#C2A27C" />
+          <Text style={styles.distanceText}>{distance || "Unknown"} away</Text>
+        </View>
+
+        <View style={styles.addressContainer}>
+          <Text style={styles.addressText}>{seniorDetails.addressLine1}</Text>
+          <Text style={styles.addressText}>{seniorDetails.addressLine2}</Text>
+          <Text style={styles.addressText}>{`${seniorDetails.city}, ${seniorDetails.state} ${seniorDetails.zipCode}`}</Text>
+        </View>
+      </ScrollView>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.button, styles.bookButton]}>
+          <Text style={styles.buttonText}>ACCEPT REQUEST</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.goBackButton]}>
+          <Text style={styles.buttonText}>DECLINE</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -189,7 +197,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#295259',
     color: '#ffffff',
   },
-
   detailsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

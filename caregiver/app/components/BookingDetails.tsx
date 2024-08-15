@@ -11,14 +11,11 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 
-// Define the navigation stack parameter list
 type RootStackParamList = {
   RatingScreen: { bookingId: string; caregiverId: string; seniorId: string };
-  // Add other screens in the stack as needed
   OtherScreen: undefined;
 };
 
-// Define the navigation prop and route prop types
 type BookingDetailsNavigationProp = StackNavigationProp<RootStackParamList, 'RatingScreen'>;
 type BookingDetailsRouteProp = RouteProp<RootStackParamList, 'RatingScreen'>;
 

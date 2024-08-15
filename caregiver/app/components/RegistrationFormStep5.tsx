@@ -80,7 +80,7 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
   const handleRegister = async () => {
     try {
       let UserDataPayload = await getUserData();
-      console.log("Original UserDataPayload:", UserDataPayload);
+      
   
       const careNeeds = careTypes.reduce((acc, care) => {
         acc[care.value] = care.value === UserDataPayload.careType;
@@ -97,13 +97,13 @@ const RegistrationFormStep5: React.FC<Props> = ({ navigation }) => {
       };
       delete UserDataPayload.dateOfBirth; 
   
-      console.log("Modified UserDataPayload:", UserDataPayload);
+      
   
       const response = await axios.post(
         API_ENDPOINTS.AUTH.REGISTER,
         UserDataPayload
       );
-      console.log(response);
+      
   
       if (response.status === 201) {
         const { token, email, name, id } = response.data;

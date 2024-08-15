@@ -13,41 +13,41 @@ type RootStackParamList = {
 type StatusScreenRouteProp = RouteProp<RootStackParamList, 'StatusScreen'>;
 type StatusScreenNavigationProp = StackNavigationProp<RootStackParamList, 'StatusScreen'>;
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window'); // Get screen width
 
 const StatusScreen: React.FC = () => {
   const navigation = useNavigation<StatusScreenNavigationProp>();
   const route = useRoute<StatusScreenRouteProp>();
   const { status, title, message, duration, onContinue } = route.params;
 
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false); // State to control confetti display
 
-  const iconScale = useSharedValue(0);
-  const messageOpacity = useSharedValue(0);
-  const iconRotation = useSharedValue(0);
-  const iconShake = useSharedValue(0);
+  const iconScale = useSharedValue(0); // Shared value for icon scaling animation
+  const messageOpacity = useSharedValue(0); // Shared value for message opacity animation
+  const iconRotation = useSharedValue(0); // Shared value for icon rotation animation
+  const iconShake = useSharedValue(0); // Shared value for icon shake animation
 
   useEffect(() => {
     if (status === 'success') {
-      iconScale.value = withTiming(1, { duration: 1000 });
-      setShowConfetti(true);
+      iconScale.value = withTiming(1, { duration: 1000 }); // Animate icon scaling
+      setShowConfetti(true); // Show confetti for success
     } else if (status === 'failure') {
       iconShake.value = withRepeat(
         withSequence(withTiming(-10, { duration: 50 }), withTiming(10, { duration: 50 })),
         -1,
         true
-      );
+      ); // Animate icon shaking for failure
     } else if (status === 'warning') {
-      iconRotation.value = withRepeat(withTiming(15, { duration: 1000 }), -1, true);
+      iconRotation.value = withRepeat(withTiming(15, { duration: 1000 }), -1, true); // Animate icon rotation for warning
     }
 
-    messageOpacity.value = withDelay(500, withTiming(1, { duration: 1000 }));
+    messageOpacity.value = withDelay(500, withTiming(1, { duration: 1000 })); // Animate message opacity
 
     const timer = setTimeout(() => {
-      onContinue();
+      onContinue(); // Call onContinue after the specified duration
     }, duration - 1000);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); // Clear the timer on unmount
   }, [status, iconScale, messageOpacity, iconRotation, iconShake, duration, onContinue]);
 
   const getIconName = () => {
@@ -66,15 +66,15 @@ const StatusScreen: React.FC = () => {
   const iconStyle = useAnimatedStyle(() => {
     if (status === 'success') {
       return {
-        transform: [{ scale: iconScale.value }],
+        transform: [{ scale: iconScale.value }], // Apply scaling transformation
       };
     } else if (status === 'failure') {
       return {
-        transform: [{ translateX: iconShake.value }],
+        transform: [{ translateX: iconShake.value }], // Apply shaking transformation
       };
     } else if (status === 'warning') {
       return {
-        transform: [{ rotate: `${iconRotation.value}deg` }],
+        transform: [{ rotate: `${iconRotation.value}deg` }], // Apply rotation transformation
       };
     } else {
       return {};
@@ -82,20 +82,20 @@ const StatusScreen: React.FC = () => {
   });
 
   const messageStyle = useAnimatedStyle(() => ({
-    opacity: messageOpacity.value,
+    opacity: messageOpacity.value, // Apply opacity transformation
   }));
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <Animated.View style={[styles.icon, iconStyle]}>
-        <Icon name={getIconName()} size={180} color="#295259" />
+        <Icon name={getIconName()} size={180} color="#295259" /> {/* Render status icon */}
       </Animated.View>
       <Animated.View style={[styles.messageContainer, messageStyle]}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.message}>{message}</Text>
       </Animated.View>
-      {showConfetti && <ConfettiCannon count={200} origin={{ x: width / 2, y: 0 }} />}
+      {showConfetti && <ConfettiCannon count={200} origin={{ x: width / 2, y: 0 }} />} {/* Display confetti if success */}
     </View>
   );
 };

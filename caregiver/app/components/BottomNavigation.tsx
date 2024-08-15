@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     position: 'absolute',
-    bottom: 20, // Adjusted to lift icons
+    bottom: 20, 
     paddingHorizontal: 20,
   },
   iconButton: {
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButtonWithMargin: {
-    marginHorizontal: 20, // Adding space between the middle buttons
+    marginHorizontal: 20, 
   },
   sosButtonWrapper: {
     position: 'absolute',
-    top: -65, // Adjusted to center SOS button
-    left: width / 2 - 35, // Centering the SOS button
+    top: -65, 
+    left: width / 2 - 35, 
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#C8A77A', // Custom border color for SOS button
+    borderColor: '#C8A77A',
     elevation: 25,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

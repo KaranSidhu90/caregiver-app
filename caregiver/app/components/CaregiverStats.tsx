@@ -5,21 +5,23 @@ type Props = {
   category: string;
   activeClients: number;
   totalClients: number;
+  distance: string;
 };
 
-const CaregiverStats: React.FC<Props> = ({ category, activeClients, totalClients }) => {
+const CaregiverStats: React.FC<Props> = ({ category, activeClients, totalClients, distance }) => {
   return (
     <View style={styles.statsContainer}>
       <View style={[styles.statItem, styles.borderRight]}>
-        <Text style={styles.statValue}>{category}</Text>
+        <Text style={styles.statValue}>{distance}</Text>
+        <Text style={styles.statLabel}>Distance</Text>
       </View>
       <View style={[styles.statItem, styles.borderRight]}>
         <Text style={styles.statValue}>{activeClients}</Text>
-        <Text style={styles.statLabel}>Active</Text>
+        <Text style={styles.statLabel}>Active Clients</Text>
       </View>
       <View style={styles.statItem}>
         <Text style={styles.statValue}>{totalClients}</Text>
-        <Text style={styles.statLabel}>Clients</Text>
+        <Text style={styles.statLabel}>Total Clients</Text>
       </View>
     </View>
   );

@@ -64,14 +64,6 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
     const phoneNumber = phoneInputRef.current?.getValue() || '';
     const passcodeString = passcode.join('');
 
-    console.log('Phone Number:', phoneNumber);  // Log the phone number
-    console.log('Passcode:', passcodeString);   // Log the passcode
-
-    // if (!phoneInputRef.current?.isValidNumber()) {
-    //   Alert.alert('Error', 'Invalid phone number.');
-    //   return;
-    // }
-
     try {
       await AsyncStorage.clear();
       const loginPayload = {
@@ -79,12 +71,12 @@ const LoginComponent: React.FC<Props> = ({ navigation }) => {
         passcode: passcodeString,
       };
       
-      console.log('Login Payload:', loginPayload); // Log the payload being sent
+       // Log the payload being sent
 
       setIsLoggingIn(true);
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, loginPayload);
       
-      console.log('Login Response:', response.data); // Log the response data
+       // Log the response data
 
       if (response.status === 200) {
         const { token, name, id, userType } = response.data;

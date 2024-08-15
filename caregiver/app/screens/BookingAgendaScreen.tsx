@@ -51,8 +51,8 @@ const BookingAgendaScreen: React.FC = () => {
         const pendingUrl = API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(seniorId) + '?status=Pending';
         const acceptedUrl = API_ENDPOINTS.BOOKINGS.GET_BY_SENIOR_ID(seniorId) + '?status=Accepted';
 
-        console.log('Fetching pending bookings from:', pendingUrl);
-        console.log('Fetching accepted bookings from:', acceptedUrl);
+        
+        
 
         let allBookings: Booking[] = [];
 
@@ -74,14 +74,14 @@ const BookingAgendaScreen: React.FC = () => {
           allBookings = [...allBookings, ...acceptedResponse.data];
         } catch (error) {
           if (axios.isAxiosError(error) && error.response?.status === 409) {
-            console.log('No accepted bookings found.'); 
+             
           } else {
             throw error; // Re-throw unexpected errors
           }
         }
 
         if (allBookings.length === 0) {
-          console.log('No bookings found for this user.');
+          
           setBookings([]);
           setMarkedDates({});
           setLoading(false);
@@ -96,7 +96,7 @@ const BookingAgendaScreen: React.FC = () => {
           const acc = await accPromise;
           try {
             const url = API_ENDPOINTS.USERS.GET_CAREGIVER_BY_ID(id);
-            console.log('Fetching caregiver data from:', url);
+            
             const { data } = await axios.get(url);
             acc[data._id] = data;
           } catch (error) {

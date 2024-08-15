@@ -11,42 +11,39 @@ type Props = {
 };
 
 const RequestDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+  // Destructure request details from route params
   const { request } = route.params;
   const { seniorDetails, date, additionalInfo, caregiverAddress } = request;
   const { ailmentCategories, ailments, careNeeds } = seniorDetails || {};
-  console.log('Request Data:', request);
+  
+  console.log('request', request); // Log the request for debugging
 
+  // Format senior's address
   const seniorAddress = `${seniorDetails.addressLine1}, ${seniorDetails.addressLine2}, ${seniorDetails.city}, ${seniorDetails.state} ${seniorDetails.zipCode}`;
 
+  // Create a scrollY animated value
   const scrollY = useRef(new Animated.Value(0)).current;
 
+  // Interpolate avatar size based on scroll position
   const avatarSize = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [116, 58],
     extrapolate: 'clamp',
   });
 
+  // Interpolate name font size based on scroll position
   const nameFontSize = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [20, 16],
     extrapolate: 'clamp',
   });
 
+  // Interpolate visibility based on scroll position
   const showHide = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
-
-  const handleConfirmRequest = () => {
-    console.log(`Confirmed request with ID: ${request._id}`);
-    navigation.goBack();
-  };
-
-  const handleDeclineRequest = () => {
-    console.log(`Declined request with ID: ${request._id}`);
-    navigation.goBack();
-  };
 
   return (
     <View style={styles.container}>
@@ -59,8 +56,10 @@ const RequestDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           showHide={showHide}
         />
       </Animated.View>
+      
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
+        // Animate based on scroll position
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
@@ -78,11 +77,10 @@ const RequestDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           caregiverAddress={caregiverAddress}
           seniorAddress={seniorAddress}
         />
-       
       </ScrollView>
-      <BookingActionButtons
-      data={route}
-        />
+
+      {/* Render action buttons with route data */}
+      <BookingActionButtons data={route} />
     </View>
   );
 };
@@ -105,10 +103,10 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     paddingHorizontal: 20,
     paddingBottom: 80,
-    paddingTop: 200,  // Adjust this to match the initial height of the header
+    paddingTop: 200, // Matches initial height of the header
   },
   spacer: {
-    height: 150,  // Adjust this to match the initial height of the header
+    height: 150, // Matches initial height of the header
   },
 });
 

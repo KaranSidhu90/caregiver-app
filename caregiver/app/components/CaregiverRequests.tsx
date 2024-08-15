@@ -40,24 +40,25 @@ type Request = {
 };
 
 const CaregiverRequests: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [requests, setRequests] = useState<Request[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [distancesFetched, setDistancesFetched] = useState<boolean>(false);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // State for tracking loading state
+  const [requests, setRequests] = useState<Request[]>([]); // State for storing requests data
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for storing error messages
+  const [distancesFetched, setDistancesFetched] = useState<boolean>(false); // State to track if distances have been fetched
+  const [userAddress, setUserAddress] = useState<string | null>(null); // State for storing user's address
 
   useEffect(() => {
-    fetchCaregiverDetails();
+    fetchCaregiverDetails(); // Fetch caregiver details on component mount
   }, []);
 
   useEffect(() => {
     if (requests.length > 0 && userAddress && !distancesFetched) {
-      fetchDistances();
+      fetchDistances(); // Fetch distances once requests and user address are available
     }
   }, [requests, userAddress, distancesFetched]);
 
+  // Function to fetch caregiver details using stored user ID
   const fetchCaregiverDetails = async () => {
-    const storedUserId = await AsyncStorage.getItem('userId');
+    const storedUserId = await AsyncStorage.getItem('userId'); // Retrieve stored user ID
     if (!storedUserId) {
       setErrorMessage("User ID not found");
       setIsLoading(false);
@@ -65,22 +66,25 @@ const CaregiverRequests: React.FC = () => {
     }
 
     try {
+      // Fetch caregiver details from API
       const caregiverResponse = await axios.get(API_ENDPOINTS.USERS.GET_CAREGIVER_BY_ID(storedUserId));
       const caregiverData = caregiverResponse.data;
       const { addressLine1, addressLine2, city, state, zipCode } = caregiverData;
       const fullAddress = `${addressLine1} ${addressLine2}, ${city}, ${state} ${zipCode}`;
-      setUserAddress(fullAddress);
-      fetchRequests(storedUserId);
+      setUserAddress(fullAddress); // Set user address state
+      fetchRequests(storedUserId); // Fetch requests associated with the caregiver
     } catch (error) {
       setErrorMessage("An error occurred while fetching caregiver details.");
       setIsLoading(false);
     }
   };
 
+  // Function to fetch requests for the caregiver
   const fetchRequests = async (caregiverId: string) => {
     try {
+      // Fetch requests from API
       const response = await axios.get(API_ENDPOINTS.BOOKINGS.GET_BY_CAREGIVER_ID_DETAILS(caregiverId));
-      setRequests(response.data);
+      setRequests(response.data); // Set requests state
       setIsLoading(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -96,6 +100,7 @@ const CaregiverRequests: React.FC = () => {
     }
   };
 
+  // Function to fetch distance data between user and senior addresses
   const fetchDistances = async () => {
     if (userAddress) {
       const destinations = requests.map(
@@ -103,6 +108,7 @@ const CaregiverRequests: React.FC = () => {
       );
 
       try {
+        // Fetch distance matrix data using a helper function
         const distanceData = await getDistanceMatrix([userAddress], destinations);
 
         const distanceValues = distanceData.rows[0].elements.map((element: any) => ({
@@ -110,20 +116,22 @@ const CaregiverRequests: React.FC = () => {
           value: element.distance.value
         }));
 
+        // Add distance data to each request
         const requestsWithDistances = requests.map((request, index) => ({
           ...request,
           distance: distanceValues[index].text,
           caregiverAddress: userAddress
         }));
 
-        setRequests(requestsWithDistances);
-        setDistancesFetched(true);
+        setRequests(requestsWithDistances); // Update requests with distance information
+        setDistancesFetched(true); // Mark distances as fetched
       } catch (error) {
         console.error('Error fetching distances:', error);
       }
     }
   };
 
+  // Render loading state
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -132,6 +140,7 @@ const CaregiverRequests: React.FC = () => {
     );
   }
 
+  // Render error message
   if (errorMessage) {
     return (
       <View style={styles.errorContainer}>
@@ -152,6 +161,7 @@ const CaregiverRequests: React.FC = () => {
   );
 };
 
+// Styles for the CaregiverRequests component
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,

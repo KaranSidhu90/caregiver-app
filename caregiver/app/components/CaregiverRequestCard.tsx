@@ -14,47 +14,61 @@ type Props = {
 };
 
 const CaregiverRequestCard: React.FC<Props> = ({ data, iconColor = "#C2A27C", buttonColor = "#C2A27C" }) => {
+  // Hook to access navigation object for navigating to the request detail screen
   const navigation = useNavigation<RequestDetailScreenNavigationProp>();
+  
+  // Destructuring the relevant data from the provided data prop
   const { seniorDetails, date, slots, distance, status } = data;
 
+  // Early return if seniorDetails are not available
   if (!seniorDetails) {
     return <Text>No senior details available.</Text>;
   }
 
+  // Get the avatar URL for the senior, using a helper function
   const avatarUrl = getAvatarUrl(seniorDetails.name || "Unknown", seniorDetails.imageUrl);
+
+  // Calculate the age of the senior using their date of birth
   const age = calculateAge(seniorDetails.dob);
 
+  // Determine the time slot based on the provided slots
   const timeSlot = slots.morning
     ? "8AM - 12PM"
     : slots.afternoon
     ? "1PM - 5PM"
     : "6PM - 10PM";
 
+  // Format the date using moment.js
   const formattedDate = moment.utc(date).format("dddd, Do MMMM, YYYY");
 
+  // Function to format care types into readable text
   const formatCareType = (careType: string) => {
     return careType
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, (str) => str.toUpperCase());
+      .replace(/([A-Z])/g, ' $1') // Insert space before capital letters
+      .replace(/^./, (str) => str.toUpperCase()); // Capitalize the first letter
   };
 
+  // Format and join all care needs into a string
   const formattedCareNeeds = seniorDetails.careNeeds.map((careType: string) => formatCareType(careType)).join(", ");
-
+  
+  // Navigate to the RequestDetailScreen with the current data when details button is pressed
   const openDetails = () => {
     navigation.navigate('RequestDetailScreen', { request: data });
   };
 
-  // Determine the status icon and text based on booking status
+  // Determine the status icon, text, and color based on the booking status
   const statusIcon = status === "Accepted" ? "check-circle" : "hourglass-empty";
   const statusText = status === "Accepted" ? "Accepted" : "Pending";
   const statusColor = status === "Accepted" ? "#4CAF50" : "#295259";
 
+  // Function to get the chip style based on the booking status
   const getChipStyle = () => {
     return {
       backgroundColor: status === "Accepted" ? "#9FD4A3" : "#C2A27C",
     };
   };
 
+  // Render the caregiver request card UI
   return (
       <View style={styles.cardWrapper}>
         <View style={styles.cardHeader}>
@@ -105,6 +119,7 @@ const CaregiverRequestCard: React.FC<Props> = ({ data, iconColor = "#C2A27C", bu
   );
 };
 
+// Styles for the caregiver request card
 const styles = StyleSheet.create({
   cardContainer: {
     marginBottom: 16,

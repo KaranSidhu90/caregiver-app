@@ -1,6 +1,6 @@
 // const BASE_URL = 'http://192.168.40.59:5000'; 
-const BASE_URL = 'http:/10.69.161.218:5000'; 
-// const BASE_URL = 'http://172.20.10.5:5000'; 
+// const BASE_URL = 'http:/10.69.161.218:5000'; 
+const BASE_URL = 'http://192.168.18.38:5000'; 
 
 const API_ENDPOINTS = {
     AUTH: {
