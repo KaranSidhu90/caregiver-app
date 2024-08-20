@@ -9,7 +9,6 @@ const { width } = Dimensions.get('window');
 const BottomNavigation: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.container}>
-      {/* Background SVG with an upward hump in the middle */}
       <Svg width={width} height={120} style={styles.svgStyle}>
         <Path
           d={`
@@ -26,7 +25,6 @@ const BottomNavigation: React.FC<BottomTabBarProps> = ({ state, descriptors, nav
       </Svg>
 
       <View style={styles.iconContainer}>
-        {/* Icon 1: Home */}
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => navigation.navigate(state.routes[0].name)}
@@ -34,7 +32,6 @@ const BottomNavigation: React.FC<BottomTabBarProps> = ({ state, descriptors, nav
           <Icon name="home" size={30} color="#295259" />
         </TouchableOpacity>
 
-        {/* Icon 2: All Caregivers */}
         <TouchableOpacity
           style={[styles.iconButton, styles.iconButtonWithMargin]}
           onPress={() => navigation.navigate(state.routes[1].name)}
@@ -42,14 +39,12 @@ const BottomNavigation: React.FC<BottomTabBarProps> = ({ state, descriptors, nav
           <Icon name="users" size={30} color="#295259" />
         </TouchableOpacity>
 
-        {/* SOS Button in the Center */}
         <View style={styles.sosButtonWrapper}>
           <TouchableOpacity style={styles.sosButton}>
             <Icon name="search" size={35} color="#fff" />
           </TouchableOpacity>
         </View>
 
-        {/* Icon 3: Past Bookings */}
         <TouchableOpacity
           style={[styles.iconButton, styles.iconButtonWithMargin]}
           onPress={() => navigation.navigate(state.routes[2].name)}
@@ -57,7 +52,6 @@ const BottomNavigation: React.FC<BottomTabBarProps> = ({ state, descriptors, nav
           <Icon name="history" size={30} color="#295259" />
         </TouchableOpacity>
 
-        {/* Icon 4: Profile */}
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => navigation.navigate(state.routes[3].name)}

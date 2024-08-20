@@ -19,7 +19,6 @@ const RegistrationHeader: React.FC<Props> = ({ title, step, icon }) => {
         <Icon style={styles.icon} name={icon} size={100} color="#fff" />
         <Text h5 style={styles.headerText}>{title}</Text>
         <Text p muted style={styles.step}>{step}</Text>
-        {/* <Icon name="info" size={24} color="#fff" style={styles.infoIcon} /> */}
       </View>
     </View>
   );

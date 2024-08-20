@@ -60,7 +60,6 @@ const CaregiverRequestDetails: React.FC<Props> = ({ request, onClose, onConfirmR
 
   return (
     <View style={styles.container}>
-      {/* Close button to exit the details screen */}
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Icon name="close" size={24} color="#000" />
       </TouchableOpacity>

@@ -89,13 +89,13 @@ const StatusScreen: React.FC = () => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <Animated.View style={[styles.icon, iconStyle]}>
-        <Icon name={getIconName()} size={180} color="#295259" /> {/* Render status icon */}
+        <Icon name={getIconName()} size={180} color="#295259" /> 
       </Animated.View>
       <Animated.View style={[styles.messageContainer, messageStyle]}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.message}>{message}</Text>
       </Animated.View>
-      {showConfetti && <ConfettiCannon count={200} origin={{ x: width / 2, y: 0 }} />} {/* Display confetti if success */}
+      {showConfetti && <ConfettiCannon count={200} origin={{ x: width / 2, y: 0 }} />} 
     </View>
   );
 };

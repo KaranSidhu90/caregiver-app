@@ -28,23 +28,16 @@ const BookingSeniorDetails: React.FC<Props> = ({ seniorDetails, date, avatarSize
 
   return (
     <View style={styles.container}>
-      {/* Animated avatar image */}
       <Animated.Image source={{ uri: avatarUrl }} style={[styles.avatar, { width: avatarSize, height: avatarSize }]} />
-      {/* Animated senior name text */}
       <Animated.Text style={[styles.name, { fontSize: nameFontSize }]}>
         {seniorDetails.name || "Unknown"}
       </Animated.Text>
-      {/* Animated senior age and gender text */}
       <Animated.Text style={[styles.name, { fontSize: nameFontSize }]}>
         {`${calculateAge(seniorDetails.dob)} Years, ${seniorDetails.gender || "Unknown"}`}
       </Animated.Text>
-      {/* Animated requirement title */}
       <Animated.Text style={[styles.requirementTitle, { display: showHide }]}>Requirement</Animated.Text>
-      {/* Display formatted care needs */}
       <Text style={styles.requirement}>{formattedCareNeeds}</Text>
-      {/* Animated date title */}
       <Animated.Text style={[styles.requirementTitle, { display: showHide }]}>Date</Animated.Text>
-      {/* Display formatted date */}
       <Text style={styles.requirement}>{formattedDate}</Text>
     </View>
   );

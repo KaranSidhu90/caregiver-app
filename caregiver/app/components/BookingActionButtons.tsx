@@ -96,7 +96,7 @@ const BookingActionButtons: React.FC<Props> = ({ data }) => {
 
   return (
     <View style={styles.buttonContainer}>
-      {renderButtons()} {/* Render the action buttons */}
+      {renderButtons()} 
     </View>
   );
 };

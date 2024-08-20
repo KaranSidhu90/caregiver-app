@@ -75,7 +75,6 @@ const BookingCalendarView: React.FC<Props> = ({ bookings, caregivers }) => {
         <View style={styles.bookingsContainer}>
           <Text style={styles.selectedDate}>{selectedDate}</Text>
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
-            {/* Render booking cards for the selected date */}
             {filteredBookings.map((booking) => (
               <BookingCard key={booking._id} booking={booking}  caregiver={caregivers[booking.caregiverId]} />
             ))}

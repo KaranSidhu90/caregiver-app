@@ -80,7 +80,6 @@ const BookingMapSection: React.FC<BookingMapSectionProps> = ({ caregiverAddress,
 
   return (
     <View style={styles.container}>
-      {/* Touchable area to open Google Maps with directions */}
       <TouchableOpacity onPress={handleMapPress}>
         <MapView
           key={`${origin.latitude}-${destination.latitude}`} // Force re-render when coordinates change
@@ -92,8 +91,8 @@ const BookingMapSection: React.FC<BookingMapSectionProps> = ({ caregiverAddress,
           zoomEnabled={true}
           customMapStyle={customMapStyle} // Apply custom map styling
         >
-          <Marker coordinate={origin} pinColor="#295259" /> {/* Caregiver marker */}
-          <Marker coordinate={destination} pinColor="#C2A27C" /> {/* Senior marker */}
+          <Marker coordinate={origin} pinColor="#295259" /> 
+          <Marker coordinate={destination} pinColor="#C2A27C" />
           <MapViewDirections
             origin={origin}
             destination={destination}
@@ -114,7 +113,7 @@ const BookingMapSection: React.FC<BookingMapSectionProps> = ({ caregiverAddress,
         </MapView>
       </TouchableOpacity>
       <Text style={styles.distanceText}>
-        {distance !== null ? `${distance} km away` : "Calculating distance..."} {/* Display distance or loading text */}
+        {distance !== null ? `${distance} km away` : "Calculating distance..."} 
       </Text>
     </View>
   );

@@ -79,7 +79,6 @@ const RequestDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         />
       </ScrollView>
 
-      {/* Render action buttons with route data */}
       <BookingActionButtons data={route} />
     </View>
   );

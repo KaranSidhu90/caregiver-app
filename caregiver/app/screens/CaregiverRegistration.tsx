@@ -10,7 +10,6 @@ type Props = {
 const CaregiverRegister: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      {/* <CaregiverRegistrationHeader title="CAREGIVER" subTitle="Registration" step="Step 1 of 5" icon='hand-holding-heart' /> */}
       <CaregiverRegisterForm navigation={navigation} />
     </View>
   );
